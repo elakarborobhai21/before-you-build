@@ -53,6 +53,10 @@ Example: `- [National telecom tariff table](https://example.com/tariffs) — acc
 
 Plain and direct. No exclamation marks. No hype words such as "revolutionary", "game-changing" or "guaranteed". Say what is known, what is not, and what to do next. Use fictional or generic examples only; do not name real ventures or real people.
 
+## Pronouns
+
+Refer to founders and other people as "they" unless the brief states their pronouns, in which case use those. Never infer a gender from a role or a name.
+
 ## Privacy
 
 Founder details stay in the run folder. Do not publish, share or look up private information beyond what the user gives and what is professionally public.

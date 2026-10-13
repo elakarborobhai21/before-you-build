@@ -66,7 +66,7 @@ class SkillTests(unittest.TestCase):
         quick = stages(body, "Quick Check stages")
         self.assertEqual(sorted(quick), ["1", "2", "3", "4"])
         self.assertEqual(sorted(full), ["1", "2", "3", "4", "4b", "5"])
-        for name in ("1", "3", "4"):
+        for name in ("1", "3"):
             self.assertIn("in parallel", full[name], name)
         self.assertIn("in parallel", quick["1"])
         for label, found in (("quick", quick), ("full", full)):
@@ -158,21 +158,30 @@ class SkillTests(unittest.TestCase):
         self.assertIn("`used in` paths", upgrade)
         self.assertIn("quick_check/", upgrade)
 
-    def test_stage4_business_model_first(self):
-        # Ruling R24: business model first, then operations and financials in parallel.
+    def test_stage4_sequential(self):
+        # The rebuild runs one agent at a time: business model, then operations, then
+        # financials, so the model takes its team and costs from the operations plan.
         s4 = stages(text(), "Full Review stages")["4"]
-        designer = s4.find("byb-business-model-designer")
-        parallel = s4.find("in parallel", designer)
-        self.assertNotIn(-1, (designer, parallel))
+        self.assertNotIn("in parallel", s4)
+        self.assertNotIn("same time", s4)
+        self.assertIn("one at a time", s4)
+        order = [s4.find(stem) for stem in ("byb-business-model-designer",
+                                            "byb-operations-product-planner",
+                                            "byb-financial-modeller")]
+        self.assertNotIn(-1, order)
+        self.assertEqual(order, sorted(order))
         self.assertIn("`Stage: 4a`", s4)
-        self.assertIn("alone", s4[designer:parallel])
-        self.assertRegex(s4, r"`40_plan/business_model\.md` exists and is not empty")
-        for stem in ("byb-operations-product-planner", "byb-financial-modeller"):
-            self.assertLess(designer, s4.find(stem), stem)
-            self.assertLess(parallel, s4.find(stem), stem)
-        self.assertIn("as the offer they plan and model", s4)
+        for path in ("business_model.md", "operations_product.md"):
+            self.assertRegex(s4, rf"`40_plan/{re.escape(path)}` exists and is not empty")
+        self.assertRegex(s4, r"`40_plan/financials\.md` and `40_plan/model_v2\.csv` exist "
+                             r"and are not empty")
+        self.assertIn("reads `40_plan/business_model.md` and `40_plan/operations_product.md`",
+                      s4)
+        self.assertIn("If an earlier file is re-dispatched after a later agent has run, "
+                      "re-run every later agent after it, in order", s4)
         self.assertIn("the only allowed problem is `missing or empty: "
                       "30_assessment/sceptic_recheck.md`", s4)
+        self.assertIn("After all three Stage 4 agents", stages(text(), "Full Review stages")["4b"])
 
     def test_length(self):
         self.assertLess(len(text().split()), 3000)

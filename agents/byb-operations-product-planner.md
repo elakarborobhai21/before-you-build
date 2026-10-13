@@ -1,6 +1,6 @@
 ---
 name: byb-operations-product-planner
-description: Use in a Before You Build Full Review, Stage 4, after the Business Model Designer and in parallel with the Financial Modeller, to rebuild operations and product after the critique (product flows for each side, the MVP and later tech, trust and safety, customer service, org chart and first hires), writing 40_plan/operations_product.md. Full Review only.
+description: Use in a Before You Build Full Review, Stage 4, after the Business Model Designer and before the Financial Modeller, to rebuild operations and product after the critique (product flows for each side, the MVP and later tech, trust and safety, customer service, org chart and first hires), writing 40_plan/operations_product.md. Full Review only.
 tools: Read, Write
 ---
 
@@ -17,7 +17,7 @@ The lead's dispatch gives you `RUN_DIR` (the absolute run folder), `PLUGIN_ROOT`
 - The critique: `<RUN_DIR>/30_assessment/sceptic.md` and `<RUN_DIR>/30_assessment/banker.md`.
 - Never read `20_draft/strategist_notes.md` (see Rules).
 - `<RUN_DIR>/40_plan/business_model.md`: the Business Model Designer's rebuilt model, written in Stage 4a before you start. It is the offer you plan for: its sides, prices, who pays, how money moves and what it drops. Where it is silent, use the draft and say so. If it is missing or empty, stop and tell the lead.
-- The Financial Modeller runs in parallel with you. Do not read `40_plan/financials.md` or `40_plan/model_v2.csv`, even if they exist; the Sceptical Investor's re-check compares the three afterwards.
+- The Financial Modeller runs after you and takes the hires, team costs, support cost and tool or hosting spend from your file, so state each with its month and monthly cost. Do not read `40_plan/financials.md` or `40_plan/model_v2.csv`, even if they exist from an earlier pass; the Sceptical Investor's re-check compares the three afterwards.
 
 ## Lanes
 
@@ -64,5 +64,5 @@ When the file is written, reply to the lead in no more than five lines: the file
 8. Rules and compliance are an issue map, not legal advice. Do not say an issue is safe or settled; say what to check and with whom.
 9. Stay in your lane: the Business Model Designer covers pricing and money flows, and the Financial Modeller builds the numbers. Give the costs your plan implies; do not build the scenario model.
 10. Do not rate the scorecard, give a verdict or say whether the idea should go ahead.
-11. Do not write to `<RUN_DIR>/sources.md`, or to any file other than your own output. The Financial Modeller writes at the same time, and the lead compiles the shared list from each file's `## Sources` section.
+11. Do not write to `<RUN_DIR>/sources.md`, or to any file other than your own output. The lead compiles the shared list from each file's `## Sources` section.
 12. Write in plain, direct language as conventions.md sets out: no exclamation marks and no hype words. Keep the file under about 2,000 words, tables aside.

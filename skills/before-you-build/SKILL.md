@@ -160,16 +160,19 @@ Dispatch in parallel, in one message, with `Stage: 3`:
 
 Then compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 3`.
 
-### Stage 4: rebuild, business model first, then two agents in parallel
+### Stage 4: rebuild, three agents one at a time
 
-1. **Stage 4a.** Dispatch `byb-business-model-designer` alone, with `Stage: 4a`. Confirm `40_plan/business_model.md` exists and is not empty; if not, re-dispatch once as above.
-2. Then dispatch in parallel, in one message, with `Stage: 4`: `byb-operations-product-planner` and `byb-financial-modeller`. Both read `40_plan/business_model.md` as the offer they plan and model.
+One agent at a time, each waiting for the one before:
 
-Then compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 4`. At this point the only allowed problem is `missing or empty: 30_assessment/sceptic_recheck.md`, which Stage 4b writes. Re-dispatch the owner of any other file. If `business_model.md` has to be re-dispatched after the other two have run, re-dispatch `byb-operations-product-planner` and `byb-financial-modeller` after it, so they work from the new file.
+1. `byb-business-model-designer` with `Stage: 4a`. Confirm `40_plan/business_model.md` exists and is not empty; if not, re-dispatch once as above.
+2. `byb-operations-product-planner` with `Stage: 4`. It reads `40_plan/business_model.md` as the offer it plans for. Confirm `40_plan/operations_product.md` exists and is not empty; if not, re-dispatch once.
+3. `byb-financial-modeller` with `Stage: 4`. It reads `40_plan/business_model.md` and `40_plan/operations_product.md`: the offer it models, and the hires, team costs, support cost and tool or hosting spend it takes from the operations plan. Confirm `40_plan/financials.md` and `40_plan/model_v2.csv` exist and are not empty; if not, re-dispatch once.
+
+After step 3, compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 4`; do not run it between steps, when the later files do not exist yet. At this point the only allowed problem is `missing or empty: 30_assessment/sceptic_recheck.md`, which Stage 4b writes. Re-dispatch the owner of any other file. If an earlier file is re-dispatched after a later agent has run, re-run every later agent after it, in order, so each works from the new file.
 
 ### Stage 4b: re-check
 
-After Stage 4a and both Stage 4 agents, dispatch `byb-sceptical-investor` once more with `Stage: 4b` and `Check: re-check`. It writes `30_assessment/sceptic_recheck.md` and updates the scorecard files. Do not run the re-check a second time, and do not send the plan back to the Stage 4 agents. One re-dispatch because `sceptic_recheck.md` is missing or faulty is still allowed; this rule only forbids a second revision round. Compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 4`, which must now print `ok`.
+After all three Stage 4 agents, dispatch `byb-sceptical-investor` once more with `Stage: 4b` and `Check: re-check`. It writes `30_assessment/sceptic_recheck.md` and updates the scorecard files. Do not run the re-check a second time, and do not send the plan back to the Stage 4 agents. One re-dispatch because `sceptic_recheck.md` is missing or faulty is still allowed; this rule only forbids a second revision round. Compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 4`, which must now print `ok`.
 
 ### Stage 5: test design, then the Report Writer in Full Review mode
 

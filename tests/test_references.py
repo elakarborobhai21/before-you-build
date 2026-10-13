@@ -45,6 +45,16 @@ class ReferencesTest(unittest.TestCase):
         self.assertIn("the lead compiles `sources.md` from those sections after each stage", text)
         self.assertNotIn("whichever agent", text)
 
+    def test_conventions_neutral_pronouns(self):
+        text = read(REF + "conventions.md")
+        pronouns = text.split("## Pronouns", 1)[1].split("\n## ", 1)[0]
+        self.assertIn('"they"', pronouns)
+        self.assertIn("unless the brief states their pronouns", pronouns)
+        self.assertIn("Never infer a gender from a role or a name", pronouns)
+        brief = read("skills/before-you-build/templates/brief.md")
+        founders = brief.split("## Founders", 1)[1].split("\n## ", 1)[0]
+        self.assertRegex(founders, r"(?m)^- Pronouns \(optional\): ")
+
     def test_scorecard_md_error_handling(self):
         text = read(REF + "scorecard.md")
         for phrase in ("stdout", "stderr", "exit code 2",

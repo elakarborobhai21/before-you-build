@@ -33,6 +33,7 @@ Names are optional. Repeat this block for each founder. In Quick Check, ask only
 
 ### Founder 1: <name or "Founder 1">
 
+- Pronouns (optional): <as the founder gives them; leave blank if not given, and agents use "they">
 - Role: <what they will do in the business>
 - Experience: <relevant experience>
 - Current job and employer type: <job title; employer type, for example competitor, likely partner, regulator, unrelated company, self-employed, none>

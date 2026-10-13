@@ -33,12 +33,18 @@ class ReadmeTests(unittest.TestCase):
 
     def test_full_review_business_model_first(self):
         how = self.readme.split("### Full Review", 1)[1].split("```", 3)[1]
-        designer = how.find("Business Model")
-        parallel = how.find("Operations")
-        self.assertNotIn(-1, (designer, parallel))
-        self.assertLess(designer, parallel)
-        self.assertIn("Financial", how)
+        order = [how.find(word) for word in ("Business Model", "Operations", "Financial")]
+        self.assertNotIn(-1, order)
+        self.assertEqual(order, sorted(order))
+        rebuild = how[order[0]:how.find("re-check")]
+        self.assertNotIn("in parallel", rebuild)
         self.assertNotIn("3 rebuild agents", how)
+
+    def test_full_review_rebuild_sentence(self):
+        self.assertIn("In the rebuild, the agents work one at a time: the Business Model "
+                      "Designer first, then the Operations & Product Planner from its rebuilt "
+                      "offer, then the Financial Modeller from both", self.readme)
+        self.assertNotIn("then work in parallel from its rebuilt offer", self.readme)
 
     def test_verdicts_and_labels(self):
         scorecard = self.readme.split("### The Committee Scorecard", 1)[1].split("\n## ", 1)[0]

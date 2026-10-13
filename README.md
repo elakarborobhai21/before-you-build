@@ -47,8 +47,9 @@ flowchart LR
     A["6 research agents<br/>in parallel"] --> B["Strategist and<br/>Draft Modeller<br/>(Path A) or your<br/>own report (Path B)"]
     B --> C["Sceptical Investor and<br/>Investment Banker<br/>in parallel"]
     C --> D["Business Model<br/>Designer"]
-    D --> D2["Operations & Product<br/>Planner and Financial<br/>Modeller in parallel"]
-    D2 --> E["Sceptic<br/>re-check"]
+    D --> D2["Operations &<br/>Product Planner"]
+    D2 --> D3["Financial<br/>Modeller"]
+    D3 --> E["Sceptic<br/>re-check"]
     E --> F["Validation<br/>Test Designer"]
     F --> G["Report Writer"]
 ```
@@ -58,7 +59,7 @@ A Full Review has two paths:
 - **Path A, no report yet:** the agents draft a strategy report and a first model for you.
 - **Path B, bring your own report:** you upload a plan you already have, from a consultant, another AI tool or yourself. The agents skip the drafting step and test your report. They still do their own research, so the critics have independent evidence.
 
-In the rebuild, the Business Model Designer goes first. The Operations & Product Planner and the Financial Modeller then work in parallel from its rebuilt offer, so the plan and the model describe the same business.
+In the rebuild, the agents work one at a time: the Business Model Designer first, then the Operations & Product Planner from its rebuilt offer, then the Financial Modeller from both, taking the team and its costs from the operations plan. The plan and the model then describe the same business and the same team.
 
 The agent that writes a plan never grades it. The critics do not see the drafter's working notes, and they recompute the numbers themselves.
 

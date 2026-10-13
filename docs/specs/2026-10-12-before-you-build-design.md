@@ -83,9 +83,9 @@ All agents read `00_brief.md`. "Parallel" agents are dispatched at the same time
 | 2 | Strategist + Draft Modeller | pair (Path A only) | `20_draft/strategy_report.md`, `20_draft/model_v1.csv` |
 | 3 | Sceptical Investor | parallel ×2 | `30_assessment/sceptic.md` |
 | 3 | Investment Banker | | `30_assessment/banker.md` |
-| 4a | Business Model Designer | alone, first | `40_plan/business_model.md` |
-| 4 | Operations & Product Planner | parallel ×2, after 4a | `40_plan/operations_product.md` |
-| 4 | Financial Modeller | | `40_plan/financials.md`, `40_plan/model_v2.csv` |
+| 4a | Business Model Designer | first | `40_plan/business_model.md` |
+| 4 | Operations & Product Planner | after 4a, reads the business model | `40_plan/operations_product.md` |
+| 4 | Financial Modeller | after the Operations & Product Planner, reads both | `40_plan/financials.md`, `40_plan/model_v2.csv` |
 | 4b | Sceptical Investor (re-check) | once | `30_assessment/sceptic_recheck.md` |
 | 5 | Validation Test Designer | after 4b | `50_decision/test_plan.md`, `50_decision/gate_tracker.csv` |
 | 5 | Report Writer | after test design | `50_decision/decision_memo.md`, `50_decision/full_plan.md` |

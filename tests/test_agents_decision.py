@@ -149,8 +149,8 @@ class RebuildTests(unittest.TestCase):
                 if "strategist_notes" in line:
                     self.assertIn("Never read", line, f"{stem}: {line}")
 
-    def test_stage4_reads_business_model_not_siblings(self):
-        # Ruling R24: the designer runs first; the other two read its file, not each other's.
+    def test_stage4_reads_earlier_files_not_later(self):
+        # The three run one at a time; each reads the files written before it, never after.
         designer = agent("byb-business-model-designer")
         self.assertIn("runs first", section(designer, "Inputs"))
         self.assertIn("in one table", designer)
@@ -158,18 +158,41 @@ class RebuildTests(unittest.TestCase):
             self.assertIn(word, section(designer, "Output"), word)
         for stem in ("byb-operations-product-planner", "byb-financial-modeller"):
             inputs = section(agent(stem), "Inputs")
-            self.assertIn("in parallel", inputs, stem)
             self.assertIn("<RUN_DIR>/40_plan/business_model.md", inputs, stem)
             self.assertIn("the offer", inputs, stem)
+        fin_inputs = section(agent("byb-financial-modeller"), "Inputs")
+        self.assertIn("<RUN_DIR>/40_plan/operations_product.md", fin_inputs)
+        readable = {
+            "byb-business-model-designer": set(),
+            "byb-operations-product-planner": {"business_model.md"},
+            "byb-financial-modeller": {"business_model.md", "operations_product.md"},
+        }
         for stem in STAGE4:
             inputs = section(agent(stem), "Inputs")
             own = DECISION_AGENTS[stem][0]
             for name in STAGE4_OUTPUTS:
-                if f"40_plan/{name}" in own or name == "business_model.md":
+                if f"40_plan/{name}" in own or name in readable[stem]:
                     continue
-                for line in inputs.splitlines():
-                    if name in line:
-                        self.assertIn("Do not read", line, f"{stem}: {line}")
+                mentioned = [line for line in inputs.splitlines() if name in line]
+                self.assertTrue(mentioned, f"{stem}: no firewall line for {name}")
+                for line in mentioned:
+                    self.assertIn("Do not read", line, f"{stem}: {line}")
+
+    def test_stage4_not_parallel(self):
+        for stem in STAGE4:
+            text = agent(stem)
+            for phrase in ("in parallel", "at the same time", "runs in parallel"):
+                self.assertNotIn(phrase, text, f"{stem}: {phrase}")
+
+    def test_financial_modeller_takes_costs_from_operations(self):
+        text = agent("byb-financial-modeller")
+        inputs = section(text, "Inputs")
+        for phrase in ("hires", "team costs", "support cost", "tool or hosting spend"):
+            self.assertIn(phrase, inputs, phrase)
+        self.assertIn("come from `operations_product.md`", inputs)
+        self.assertIn("Where `operations_product.md` is silent, use your own `[A]` figure "
+                      "and say so", inputs)
+        self.assertIn("Do not invent a team or a cost plan of your own", section(text, "Rules"))
 
     def test_designer_takes_up_proposed_changes(self):
         cover = section(agent("byb-business-model-designer"), "Must cover")
@@ -196,15 +219,19 @@ class RebuildTests(unittest.TestCase):
     def test_redispatch_designer_reruns_the_other_two(self):
         from tests.test_skill import stages
         s4 = stages(read("skills/before-you-build/SKILL.md"), "Full Review stages")["4"]
-        self.assertIn("If `business_model.md` has to be re-dispatched after the other two have "
-                      "run, re-dispatch `byb-operations-product-planner` and "
-                      "`byb-financial-modeller` after it", s4)
+        self.assertIn("If an earlier file is re-dispatched after a later agent has run, "
+                      "re-run every later agent after it, in order", s4)
+        self.assertNotIn("in parallel", s4)
 
     def test_spec_stage4_order(self):
         spec = read("docs/specs/2026-10-12-before-you-build-design.md")
         self.assertNotIn("parallel ×3", spec)
-        self.assertIn("| 4a | Business Model Designer | alone, first |", spec)
-        self.assertIn("| 4 | Operations & Product Planner | parallel ×2, after 4a |", spec)
+        self.assertNotIn("parallel ×2, after 4a", spec)
+        self.assertIn("| 4a | Business Model Designer | first |", spec)
+        self.assertIn("| 4 | Operations & Product Planner | after 4a, reads the business model |",
+                      spec)
+        self.assertIn("| 4 | Financial Modeller | after the Operations & Product Planner, "
+                      "reads both |", spec)
 
     def test_financial_model_follows_business_model(self):
         inputs = section(agent("byb-financial-modeller"), "Inputs")

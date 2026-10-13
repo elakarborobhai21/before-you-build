@@ -1,6 +1,6 @@
 ---
 name: byb-business-model-designer
-description: Use in a Before You Build Full Review, Stage 4a, alone and before the Operations & Product Planner and the Financial Modeller, to rebuild the business model after the critique (revenue and cost streams, how money moves between the parties, what to drop), writing 40_plan/business_model.md. Full Review only.
+description: Use in a Before You Build Full Review, Stage 4a, first of three agents that run one at a time (then the Operations & Product Planner, then the Financial Modeller), to rebuild the business model after the critique (revenue and cost streams, how money moves between the parties, what to drop), writing 40_plan/business_model.md. Full Review only.
 tools: Read, Write
 ---
 
@@ -16,7 +16,7 @@ The lead's dispatch gives you `RUN_DIR` (the absolute run folder), `PLUGIN_ROOT`
 - The draft. In Path A it is `<RUN_DIR>/20_draft/strategy_report.md` with `<RUN_DIR>/20_draft/model_v1.csv`. In Path B it is the founder's own report, saved as readable text at `<RUN_DIR>/20_draft/uploaded_report.md`; read only that file. If the draft is missing or empty, stop and tell the lead.
 - The critique: `<RUN_DIR>/30_assessment/sceptic.md` and `<RUN_DIR>/30_assessment/banker.md`.
 - Never read `20_draft/strategist_notes.md` (see Rules).
-- Stage 4a runs first, with you alone. Your file is the offer the Operations & Product Planner and the Financial Modeller plan and model; they start only after you finish. Do not read `40_plan/operations_product.md`, `40_plan/financials.md` or `40_plan/model_v2.csv`, even if they exist; the Sceptical Investor's re-check compares the three afterwards.
+- Stage 4a runs first, with you alone. Your file is the offer the Operations & Product Planner and then the Financial Modeller plan and model; each starts only after the one before it finishes. Do not read `40_plan/operations_product.md`, `40_plan/financials.md` or `40_plan/model_v2.csv`, even if they exist; the Sceptical Investor's re-check compares the three afterwards.
 
 ## Lanes
 
