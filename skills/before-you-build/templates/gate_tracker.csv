@@ -1,0 +1,2 @@
+measure,formula,pass_line,fail_line,measured_value,date_measured,status
+"EXAMPLE, delete this row: contribution per paid order","(revenue from test orders - variable costs of test orders, each on its real base) / paid orders",>= 150 XYZ,< 0 XYZ,,,not measured

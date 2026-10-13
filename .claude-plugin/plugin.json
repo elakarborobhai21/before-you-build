@@ -1,0 +1,12 @@
+{
+  "name": "before-you-build",
+  "version": "0.1.0",
+  "description": "A team of AI agents that stress-test a startup idea before you build it: market, customers, founder fit, financials and a sceptic's review, ending in a Go to test, Pivot or Stop verdict.",
+  "author": {
+    "name": "Yaseer Ahsan"
+  },
+  "homepage": "https://github.com/elakarborobhai21/before-you-build",
+  "repository": "https://github.com/elakarborobhai21/before-you-build",
+  "license": "MIT",
+  "keywords": ["startup", "founders", "validation", "investment-committee", "emerging-markets"]
+}

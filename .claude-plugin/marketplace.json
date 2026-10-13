@@ -1,0 +1,13 @@
+{
+  "name": "before-you-build",
+  "owner": {
+    "name": "Yaseer Ahsan"
+  },
+  "plugins": [
+    {
+      "name": "before-you-build",
+      "source": "./",
+      "description": "Stress-test a startup idea with a team of AI agents before you build it."
+    }
+  ]
+}
