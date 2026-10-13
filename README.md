@@ -92,6 +92,10 @@ Results are saved on your computer in `~/before-you-build-runs/<idea-slug>-<YYYY
 
 A Quick Check can be upgraded to a Full Review later.
 
+## Example
+
+[`examples/lagos-delivery-quick-check/`](examples/lagos-delivery-quick-check/) is a complete Quick Check of a fictional idea: a same-day parcel delivery service for small online sellers in Lagos. Start with the [decision pack](examples/lagos-delivery-quick-check/50_decision/decision_pack.md). The founders are invented; the research is real and every link was checked when the example was made (October 2026). The verdict was Pivot, 48/100, confidence Medium.
+
 ## Evidence labels
 
 Every number in a report carries a label:

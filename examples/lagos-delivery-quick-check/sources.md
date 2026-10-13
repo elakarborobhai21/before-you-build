@@ -1,0 +1,17 @@
+# Sources
+
+- [Last-mile delivery in Lagos: zones, pricing and timing (2026)](https://kolonell.com/en/blog/last-mile-delivery-zones-pricing-lagos-2026) — accessed 2026-10-13 — used in 10_research/market_competition.md, 20_model/quick_model.md, 30_assessment/sceptic.md
+- [Kwik Delivery vs GIGL: Which Is Cheaper and Faster in Lagos](https://brands.ng/blog/kwik-delivery-vs-gigl-which-is-cheaper-faster-in-lagos/) — accessed 2026-10-13 — used in 10_research/market_competition.md
+- [Best Logistics Company in Nigeria for Ecommerce in 2026](https://brands.ng/blog/best-logistics-company-in-nigeria-for-ecommerce-in-2026-a-sellers-honest-guide/) — accessed 2026-10-13 — used in 10_research/market_competition.md
+- [Paystack transaction charges](https://support.paystack.com/hc/en-us/articles/360009881920-What-are-Paystack-s-transaction-charges) — accessed 2026-10-13 — used in 10_research/market_competition.md, 20_model/quick_model.md, 30_assessment/sceptic.md
+- [Nigeria E-commerce Market Size, Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/nigeria-ecommerce-market/market-size) — accessed 2026-10-13 — used in 10_research/market_competition.md
+- [When Lagos banned ride-hailing, startups pivoted to deliveries, Rest of World](https://www.restofworld.org/2021/when-lagos-banned-ride-hailing-desperate-startups-pivoted-to-deliveries-and-its-paying-off-big-time/) — accessed 2026-10-13 — used in 10_research/market_competition.md
+- [Delivery riders, power bikes exempted from Lagos okada ban, ICIR](https://www.icirnigeria.org/delivery-riders-power-bikes-exempted-from-lagos-okada-ban-police/) — accessed 2026-10-13 — used in 10_research/market_competition.md, 30_assessment/sceptic.md
+- [Same-Day Delivery in Lagos: Zones, Cost and Feasibility (2026), Kolonell](https://kolonell.com/en/blog/same-day-delivery-zones-and-cost-lagos-2026) — accessed 2026-10-13 — used in 10_research/customer_demand.md, 20_model/quick_model.md, 30_assessment/sceptic.md
+- [Facebook Ads cost in Nigeria (2026), Grey](https://grey.co/blog/facebook-ads-cost-nigeria) — accessed 2026-10-13 — used in 10_research/customer_demand.md, 20_model/quick_model.md, 30_assessment/sceptic.md
+- [Nigerian businesses are forced to navigate high-flying delivery prices, TechCabal](https://techcabal.com/2024/03/16/nigerian-businesses-are-forced-to-navigate-high-flying-delivery-prices/) — accessed 2026-10-13 — used in 10_research/customer_demand.md, 30_assessment/sceptic.md
+- [Built around WhatsApp, Catlog wants to improve social commerce in Nigeria, TechCabal](https://techcabal.com/2022/04/07/catlog-wants-to-improve-social-commerce-in-nigeria/) — accessed 2026-10-13 — used in 10_research/customer_demand.md
+- [Inside Lagos' delivery boom: Riders risking everything to survive, Nairametrics](https://nairametrics.com/2026/05/30/inside-lagos-delivery-boom-riders-risking-everything-to-survive/) — accessed 2026-10-13 — used in 10_research/customer_demand.md, 20_model/quick_model.md, 30_assessment/sceptic.md
+- [Instagram users in Nigeria, NapoleonCat](https://stats.napoleoncat.com/instagram-users-in-nigeria/2026/06/) — accessed 2026-10-13 — used in 10_research/customer_demand.md, 30_assessment/sceptic.md
+- [Exchange rate source, open.er-api.com](https://open.er-api.com/v6/latest/USD) — accessed 2026-10-13 — used in 20_model/quick_model.md
+- [New Nigerian Tax Laws 2026: What They Really Mean for Your Wallet, Zikoko](https://www.zikoko.com/money/nigerian-tax-laws-2026-what-it-means-for-your-wallet/) — accessed 2026-10-13 — used in 30_assessment/sceptic.md

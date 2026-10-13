@@ -47,8 +47,10 @@ class ReadmeTests(unittest.TestCase):
             self.assertIn(word, self.readme)
         self.assertNotIn("Go build", self.readme)
 
-    def test_no_example_promise_and_windows_note(self):
-        self.assertNotIn("examples/", self.readme)
+    def test_example_links_exist_and_windows_note(self):
+        self.assertNotIn("coming in", self.readme)
+        for path in set(re.findall(r"\]\((examples/[^)#]+)\)", self.readme)):
+            self.assertTrue((REPO / path.rstrip("/")).exists(), path)
         install = self.readme.split("## Install", 1)[1].split("\n## ", 1)[0]
         requirements = install.split("In Claude Code, run", 1)[0]
         self.assertIn("On Windows, python3 may be called python or py.", requirements)

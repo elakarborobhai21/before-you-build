@@ -1,0 +1,14 @@
+{
+  "ratings": {
+    "customer_pull": 1,
+    "route_to_customers": 2,
+    "money_per_transaction": 1,
+    "cash_to_proof": 2,
+    "competitive_response": 1,
+    "team_commitment": 2,
+    "rules_operations": 1
+  },
+  "test_measures_unit_economics": true,
+  "fulltime_within_6_months": true,
+  "label_counts": {"S": 10, "E": 11, "A": 6}
+}
