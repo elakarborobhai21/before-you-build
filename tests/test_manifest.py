@@ -10,7 +10,7 @@ class ManifestTests(unittest.TestCase):
     def test_plugin_json_fields(self):
         data = json.loads(read(".claude-plugin/plugin.json"))
         self.assertEqual(data["name"], "before-you-build")
-        self.assertEqual(data["version"], "0.1.1")
+        self.assertEqual(data["version"], "0.1.2")
         self.assertEqual(data["license"], "MIT")
         self.assertEqual(data["repository"], REPO_URL)
         self.assertTrue(data["description"].strip())

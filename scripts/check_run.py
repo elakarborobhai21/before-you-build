@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Check that a Before You Build run folder has the files each stage must leave.
 
+It also flags a test longer than 90 days and a sceptic.md over 5,000 words.
+
 Usage: python3 scripts/check_run.py <run_dir> --mode quick|full [--path A|B] --stage N
 Prints "ok" and exits 0, or one problem per line and exits 1. Bad arguments
 exit 2. Standard library only.
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +22,12 @@ DISCLAIMER = (
 )
 RESULT = "30_assessment/scorecard_result.json"
 VERDICTS = ("Go to test", "Pivot", "Stop")
+MAX_TEST_DAYS = 90
+SCEPTIC = "30_assessment/sceptic.md"
+SCEPTIC_MAX_WORDS = 5000
+# "<set-up> weeks set-up plus <live> weeks live (<days> days)"; the words and days are optional.
+DURATION = re.compile(
+    r"(\d+)[ -]weeks?(?: of)?(?: set-up)? plus (\d+)(?: live)?[ -]weeks?(?: live)?(?: \((\d+) days\))?")
 
 # Files each stage adds, in order. Stage 4b (the re-check) is counted inside stage 4.
 QUICK = [
@@ -66,6 +75,15 @@ def _flat(text: str) -> str:
     return " ".join(" ".join(lines).split())
 
 
+def test_days(text: str) -> list[int]:
+    """Days of every test duration written as set-up plus live weeks."""
+    days = []
+    for m in DURATION.finditer(text):
+        weeks = (int(m.group(1)) + int(m.group(2))) * 7
+        days.append(max(weeks, int(m.group(3))) if m.group(3) else weeks)
+    return days
+
+
 def check(run_dir: Path, mode: str, path: str, stage: int) -> list[str]:
     """Return the problems found in run_dir for this stage; empty means ok."""
     run_dir = Path(run_dir)
@@ -86,7 +104,25 @@ def check(run_dir: Path, mode: str, path: str, stage: int) -> list[str]:
         elif data["verdict"] not in VERDICTS:
             problems.append(f"verdict is not Go to test, Pivot or Stop: {RESULT}")
 
+    duration_files = []
+    sceptic = run_dir / SCEPTIC
+    if stage >= 3 and sceptic.is_file():
+        text = sceptic.read_text(encoding="utf-8", errors="replace")
+        words = len(text.split())
+        if words > SCEPTIC_MAX_WORDS:
+            problems.append(f"over 5,000 words: {SCEPTIC} ({words} words)")
+        duration_files.append((SCEPTIC, text))
+
     decision = run_dir / "50_decision"
+    if decision.is_dir():
+        for md in sorted(decision.glob("*.md")):
+            duration_files.append((f"50_decision/{md.name}",
+                                   md.read_text(encoding="utf-8", errors="replace")))
+    for rel, text in duration_files:
+        longest = max(test_days(text), default=0)
+        if longest > MAX_TEST_DAYS:
+            problems.append(f"test longer than 90 days: {rel} ({longest} days)")
+
     if decision.is_dir():
         for md in sorted(decision.glob("*.md")):
             text = md.read_text(encoding="utf-8", errors="replace")

@@ -528,7 +528,7 @@ class TemplateTests(unittest.TestCase):
         self.assertIn("Decide by: " + placeholder, read(TEMPLATES + "decision_pack.md"))
         go_no_go = read(TEMPLATES + "test_plan.md").split("## Go/no-go date", 1)[1]
         self.assertTrue(go_no_go.lstrip().startswith(placeholder), go_no_go[:120])
-        self.assertIn("- Duration: <set-up> plus <live> weeks (<days> days)",
+        self.assertIn("- Duration: <set-up> weeks set-up plus <live> weeks live (<days> days, no more than 90)",
                       read(TEMPLATES + "decision_pack.md"))
 
     def test_templates_plain(self):

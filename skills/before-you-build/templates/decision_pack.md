@@ -64,7 +64,7 @@ The cheapest test in the next 90 days.
 - What it tests: <the riskiest assumption, from question 9>
 - What you do: <the test in plain steps>
 - Budget: <amount, labelled>
-- Duration: <set-up> plus <live> weeks (<days> days)
+- Duration: <set-up> weeks set-up plus <live> weeks live (<days> days, no more than 90)
 - What you measure: <each measure; include money per transaction when the test measures it>
 - Pass line: <measure, formula and line, labelled [E] with how the line was set>
 - Fail line: <measure, formula and line, labelled [E] with how the line was set>

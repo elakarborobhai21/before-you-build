@@ -155,6 +155,65 @@ class CheckTest(unittest.TestCase):
             self.assertIn("10_research/founder_fit.md", problems[0])
 
 
+class LimitsTest(unittest.TestCase):
+    """A test runs 90 days at most; sceptic.md stays within 5,000 words."""
+
+    def quick_run(self, tmp, pack_duration=None, sceptic_text=None):
+        run = Path(tmp)
+        build(run, expected_files("quick", "A", 4))
+        if pack_duration is not None:
+            (run / "50_decision/decision_pack.md").write_text(
+                f"# x\n\n- Duration: {pack_duration}\n\n> {DISCLAIMER}\n", encoding="utf-8")
+        if sceptic_text is not None:
+            (run / "30_assessment/sceptic.md").write_text(sceptic_text, encoding="utf-8")
+        return run
+
+    def test_over_90_days_is_flagged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self.quick_run(tmp, "3 weeks set-up plus 10 weeks live (91 days), from a to b")
+            problems = check(run, "quick", "A", 4)
+            self.assertIn("test longer than 90 days: 50_decision/decision_pack.md (91 days)",
+                          problems)
+
+    def test_weeks_counted_when_days_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self.quick_run(tmp, "4 weeks set-up plus 9 weeks live")
+            problems = check(run, "quick", "A", 4)
+            self.assertIn("test longer than 90 days: 50_decision/decision_pack.md (91 days)",
+                          problems)
+
+    def test_live_weeks_word_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self.quick_run(tmp, "3 weeks set-up plus 10 live weeks")
+            problems = check(run, "quick", "A", 4)
+            self.assertIn("test longer than 90 days: 50_decision/decision_pack.md (91 days)",
+                          problems)
+
+    def test_90_days_or_fewer_is_ok(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self.quick_run(tmp, "2 weeks set-up plus 6 weeks live (56 days)")
+            self.assertEqual(check(run, "quick", "A", 4), [])
+            run = self.quick_run(tmp, "3 weeks set-up plus 9 weeks live (84 days)")
+            self.assertEqual(check(run, "quick", "A", 4), [])
+
+    def test_sceptic_question_10_duration_checked_at_stage_3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = ("# x\n\n### 10. What is the cheapest way to find out within 90 days?\n\n"
+                    "Duration: 3 weeks set-up plus 10 weeks live (91 days).\n")
+            run = self.quick_run(tmp, sceptic_text=text)
+            problems = check(run, "quick", "A", 3)
+            self.assertIn("test longer than 90 days: 30_assessment/sceptic.md (91 days)",
+                          problems)
+
+    def test_sceptic_word_limit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self.quick_run(tmp, sceptic_text="word " * 5000)
+            self.assertEqual(check(run, "quick", "A", 3), [])
+            run = self.quick_run(tmp, sceptic_text="word " * 5001)
+            self.assertIn("over 5,000 words: 30_assessment/sceptic.md (5001 words)",
+                          check(run, "quick", "A", 3))
+
+
 class CliTest(unittest.TestCase):
     def run_cli(self, *args):
         return subprocess.run([sys.executable, str(CLI), *map(str, args)],

@@ -49,7 +49,7 @@ From `50_decision/test_plan.md`; progress is tracked in `50_decision/gate_tracke
 - Version tested: <the original plan or the pivot, and why, as `test_plan.md` states>
 - What you do: <the test in plain steps>
 - Budget: <amount, labelled>
-- Duration: <days, no more than 90>
+- Duration: <set-up> weeks set-up plus <live> weeks live (<days> days, no more than 90)
 - Measures, pass and fail lines: <each measure with its formula, pass line and fail line>
 - Channel measure: <cost to win a paying customer through the main channel, with its pass line and fail line, as `test_plan.md` states>
 - Go/no-go date: <date>

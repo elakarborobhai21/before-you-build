@@ -30,7 +30,7 @@ Founder cash in the brief: <amount>. The test uses <share> of it.
 
 ## Duration
 
-<start date, end date and days, no more than 90, and the weekly steps>
+<set-up> weeks set-up plus <live> weeks live (<days> days, no more than 90), from <start date> to <end date>. <weekly steps>
 
 ## What is built and what is not
 
@@ -54,7 +54,7 @@ The cost to win a paying customer through the main channel, as set out under `Ch
 - What the founder does: <the spend or outreach, when, and how it fits the test's budget and dates; or that the main test is the channel test>
 - Formula: (money spent on the channel + incentives given + paid help for the channel) / paying customers won through it
 - Pass line: <at or below the cost to acquire a customer in the Moderate scenario, labelled [E] with the figure from `40_plan/model_v2.csv`>
-- Fail line: <at or above the cost at which the Defensive scenario or a break-even of never follows, labelled [E] with the figure>
+- Fail line: <at or above the cost at which the Defensive scenario or a break-even of never follows, or the payback fallback in conventions.md when Moderate never breaks even, labelled [E] with the figure and which rule set it>
 - Minimum sample: <paying customers won through the channel before the result is read>
 - Founder hours: <recorded next to the measure>
 

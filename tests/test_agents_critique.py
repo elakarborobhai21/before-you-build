@@ -250,6 +250,15 @@ class InputTests(unittest.TestCase):
                        "brief's date plus 7 days"):
             self.assertIn(phrase, cover, phrase)
 
+    def test_sceptic_length_and_duration_rules(self):
+        text = agent("byb-sceptical-investor")
+        rules = section(text, "Rules")
+        self.assertIn("Keep `sceptic.md` within 5,000 words in total, as `wc -w` counts them", rules)
+        self.assertIn("to count words with `wc -w`", rules)
+        cover = section(text, "Must cover")
+        self.assertIn('"<set-up> plus <live> weeks (<days> days)"', cover)
+        self.assertIn("at most 90", cover)
+
     def test_report_writer_follows_question_10_version(self):
         quick = section(agent("byb-report-writer"), "Quick Check")
         for phrase in ("Version tested", "follows the Sceptical Investor's version in question 10",

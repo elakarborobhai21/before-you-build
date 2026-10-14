@@ -26,6 +26,13 @@ class ChannelMeasureTests(unittest.TestCase):
                        "inside its budget and dates"):
             self.assertIn(phrase, block, phrase)
 
+    def test_fail_line_fallback(self):
+        block = read(REF + "conventions.md").split("## Channel measure", 1)[1].split("\n## ", 1)[0]
+        for phrase in ("If the Moderate scenario already never breaks even within 24 months",
+                       "never pays back what it cost to win them",
+                       "1 / monthly churn", "one-off cost per new customer"):
+            self.assertIn(phrase, block, phrase)
+
     def test_sceptic_question_10_includes_it(self):
         cover = section(agent("byb-sceptical-investor"), "Must cover")
         self.assertIn("For question 10, the test always includes the channel measure", cover)

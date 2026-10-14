@@ -30,7 +30,7 @@ Every test includes a channel measure, so the founder learns what it really cost
 
 - Formula: cost to win a paying customer = (money spent on the channel + incentives given + paid help for the channel) / paying customers won through it.
 - Pass line: at or below the cost to acquire a customer used in the Moderate scenario.
-- Fail line: at or above the cost at which the Defensive scenario follows, or at which break-even is never within 24 months.
+- Fail line: at or above the cost at which the Defensive scenario follows, or at which break-even is never within 24 months. If the Moderate scenario already never breaks even within 24 months, that line would fail every result, so use instead the cost at which a customer never pays back what it cost to win them: contribution per transaction x transactions per month x expected months as a customer (1 / monthly churn), minus any one-off cost per new customer (for example starter equipment). Say which rule set the line.
 - State the minimum sample (paying customers won through the channel) before the test starts.
 - Record the founder hours spent on the channel next to the measure, because unpaid founder time hides part of the real cost.
 
