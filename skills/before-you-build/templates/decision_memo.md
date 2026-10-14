@@ -51,6 +51,7 @@ From `50_decision/test_plan.md`; progress is tracked in `50_decision/gate_tracke
 - Budget: <amount, labelled>
 - Duration: <days, no more than 90>
 - Measures, pass and fail lines: <each measure with its formula, pass line and fail line>
+- Channel measure: <cost to win a paying customer through the main channel, with its pass line and fail line, as `test_plan.md` states>
 - Go/no-go date: <date>
 - If it fails: <the fallback pivots, one line each>
 

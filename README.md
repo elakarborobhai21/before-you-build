@@ -69,6 +69,8 @@ The verdict comes from the Committee Scorecard, which uses seven areas: customer
 
 The verdict is one of **Go to test**, **Pivot** or **Stop**. Some rules cap the verdict. For example, a Fatal area (an area that on its own can end the business) means the verdict cannot be better than Pivot. The best verdict is "Go to test". It means "run the cheap test", not "build the company".
 
+Every test also includes a channel measure: the real cost to win a paying customer through the main channel in the plan, measured with real spend or outreach, with its own pass and fail lines. A product can pass its test and still fail on what it costs to reach customers, so the test checks both.
+
 ## What you get
 
 Results are saved on your computer in `~/before-you-build-runs/<idea-slug>-<YYYY-MM-DD>/`.

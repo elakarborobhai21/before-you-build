@@ -24,6 +24,18 @@ Models use exactly three scenarios: `Defensive`, `Moderate`, `Optimistic`. The M
 
 Exactly three: `Go to test`, `Pivot`, `Stop`. The best verdict available is `Go to test`, never "Go build". The verdict is about the next test, not the whole company. A `Pivot` verdict names the pivot.
 
+## Channel measure
+
+Every test includes a channel measure, so the founder learns what it really costs to reach paying customers, not only whether the product works. It is the cost to win a paying customer through the main channel in the plan (for example paid social ads, a marketplace listing, sales agents or direct outreach), measured with real spend or real outreach during the test.
+
+- Formula: cost to win a paying customer = (money spent on the channel + incentives given + paid help for the channel) / paying customers won through it.
+- Pass line: at or below the cost to acquire a customer used in the Moderate scenario.
+- Fail line: at or above the cost at which the Defensive scenario follows, or at which break-even is never within 24 months.
+- State the minimum sample (paying customers won through the channel) before the test starts.
+- Record the founder hours spent on the channel next to the measure, because unpaid founder time hides part of the real cost.
+
+When the riskiest assumption is already about the channel, the main test is the channel measure. Otherwise, run a small channel test alongside the main test, inside its budget and dates.
+
 ## Run folder
 
 Each run lives in `~/before-you-build-runs/<idea-slug>-<YYYY-MM-DD>/`, whatever folder the user is working in. The lead agent passes `RUN_DIR` (this folder) and `PLUGIN_ROOT` (the plugin root) in every dispatch. Shared files are read from `<PLUGIN_ROOT>/skills/before-you-build/references/`.

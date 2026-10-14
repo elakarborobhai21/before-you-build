@@ -105,7 +105,7 @@ All agents read `00_brief.md`. "Parallel" agents are dispatched at the same time
 - **Business Model Designer** — revenue and cost streams after critique, how money moves between parties, what to drop and why.
 - **Operations & Product Planner** — product flows for each side, MVP vs later tech, trust and safety, customer service, org chart and first hires.
 - **Financial Modeller** — three scenarios (Defensive, Moderate, Optimistic); P&L, cash flow, balance sheet and working capital; per-transaction waterfall; break-even month or "never"; sensitivity of the outcome to the 4 most important assumptions.
-- **Validation Test Designer** — the cheapest test of the riskiest assumption: budget, duration, what is built and what is not, pass/fail lines with formulas, go/no-go date, fallback pivots if it fails, and a gate tracker sheet.
+- **Validation Test Designer** — the cheapest test of the riskiest assumption: budget, duration, what is built and what is not, pass/fail lines with formulas, a channel measure (the real cost to win a paying customer through the main channel, tested even when the riskiest assumption is about the product), go/no-go date, fallback pivots if it fails, and a gate tracker sheet.
 - **Report Writer / Verdict Writer** — verdict, score, confidence, top risks, the test, sources and limits, disclaimer. Plain language, no hype.
 
 ## 6. Scoring: the Committee Scorecard

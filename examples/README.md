@@ -1,6 +1,6 @@
 # Examples
 
-- [`lagos-delivery-quick-check/`](lagos-delivery-quick-check/): a full Quick Check run folder for a fictional same-day parcel delivery service in Lagos, Nigeria. The founders and their details are invented. The research figures come from public pages that were open and checked in October 2026; prices and rules change, so treat them as a snapshot.
+- [`lagos-delivery-quick-check/`](lagos-delivery-quick-check/): a full Quick Check run folder for a fictional same-day parcel delivery service in Lagos, Nigeria. The founders and their details are invented. The research figures come from public pages that were open and checked in October 2026; prices and rules change, so treat them as a snapshot. The example was made with v0.1.0, before every test included a channel measure, so its test has no `Channel measure` line.
 
 Read the files in folder order: the brief (`00_brief.md`), the research (`10_research/`), the model (`20_model/`), the Sceptical Investor's assessment and scorecard (`30_assessment/`) and the decision pack (`50_decision/decision_pack.md`). Every link used is in `sources.md`.
 
