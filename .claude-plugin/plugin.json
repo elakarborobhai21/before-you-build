@@ -1,6 +1,6 @@
 {
   "name": "before-you-build",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A team of AI agents that stress-test a startup idea before you build it: market, customers, founder fit, financials and a sceptic's review, ending in a Go to test, Pivot or Stop verdict.",
   "author": {
     "name": "Yaseer Ahsan"

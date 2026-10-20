@@ -36,7 +36,7 @@ QUICK = [
      "10_research/founder_fit.md", "sources.md"],
     ["20_model/quick_model.md"],
     ["30_assessment/sceptic.md", "30_assessment/scorecard_inputs.json", RESULT],
-    ["50_decision/decision_pack.md"],
+    ["50_decision/decision_pack.md", "50_decision/report.html"],
 ]
 FULL = [
     ["00_brief.md"],
@@ -50,7 +50,7 @@ FULL = [
     ["40_plan/business_model.md", "40_plan/operations_product.md",
      "40_plan/financials.md", "40_plan/model_v2.csv", "30_assessment/sceptic_recheck.md"],
     ["50_decision/test_plan.md", "50_decision/gate_tracker.csv",
-     "50_decision/decision_memo.md", "50_decision/full_plan.md"],
+     "50_decision/decision_memo.md", "50_decision/full_plan.md", "50_decision/report.html"],
 ]
 
 
@@ -124,8 +124,10 @@ def check(run_dir: Path, mode: str, path: str, stage: int) -> list[str]:
             problems.append(f"test longer than 90 days: {rel} ({longest} days)")
 
     if decision.is_dir():
-        for md in sorted(decision.glob("*.md")):
+        for md in sorted(decision.glob("*.md")) + sorted(decision.glob("*.html")):
             text = md.read_text(encoding="utf-8", errors="replace")
+            if md.suffix == ".html":
+                text = re.sub(r"<[^>]+>", " ", text)
             if md.stat().st_size and DISCLAIMER not in _flat(text):
                 problems.append(f"disclaimer missing: 50_decision/{md.name}")
     return problems

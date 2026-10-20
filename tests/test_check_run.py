@@ -21,7 +21,7 @@ def build(run_dir: Path, files, disclaimer=True):
         path.parent.mkdir(parents=True, exist_ok=True)
         if rel.endswith("scorecard_result.json"):
             path.write_text(json.dumps(RESULT), encoding="utf-8")
-        elif rel.endswith(".md"):
+        elif rel.endswith(".md") or rel.endswith(".html"):
             path.write_text("# x\n\n> " + DISCLAIMER + "\n" if disclaimer else "# x\n",
                             encoding="utf-8")
         else:
@@ -43,7 +43,9 @@ class ExpectedFilesTest(unittest.TestCase):
                     "30_assessment/scorecard_inputs.json", "30_assessment/scorecard_result.json"]:
             self.assertIn(rel, q3)
         self.assertNotIn("30_assessment/banker.md", q3)
-        self.assertEqual(expected_files("quick", "A", 4)[-1], "50_decision/decision_pack.md")
+        self.assertEqual(expected_files("quick", "A", 4)[-2:],
+                         ["50_decision/decision_pack.md", "50_decision/report.html"])
+        self.assertEqual(expected_files("full", "B", 5)[-1], "50_decision/report.html")
         self.assertEqual(expected_files("quick", "A", 4), expected_files("quick", "B", 4))
 
     def test_full_path_b_skips_draft(self):
@@ -144,6 +146,15 @@ class CheckTest(unittest.TestCase):
                 problems = check(run, "quick", "A", 3)
                 self.assertEqual(len(problems), 1, bad)
                 self.assertIn("scorecard_result.json", problems[0])
+
+    def test_report_html_needs_the_disclaimer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp)
+            build(run, expected_files("quick", "A", 4))
+            self.assertEqual(check(run, "quick", "A", 4), [])
+            (run / "50_decision/report.html").write_text("<p>no disclaimer</p>", encoding="utf-8")
+            self.assertIn("disclaimer missing: 50_decision/report.html",
+                          check(run, "quick", "A", 4))
 
     def test_empty_file_counts_as_missing(self):
         with tempfile.TemporaryDirectory() as tmp:

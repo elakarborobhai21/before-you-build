@@ -93,6 +93,7 @@ If an agent replies that it stopped because an input file is missing or empty, t
 | `40_plan/financials.md`, `40_plan/model_v2.csv` | byb-financial-modeller |
 | `50_decision/test_plan.md`, `50_decision/gate_tracker.csv` | byb-validation-test-designer |
 | `50_decision/decision_pack.md`, `decision_memo.md`, `full_plan.md` | byb-report-writer |
+| `50_decision/report.html` | you, with `scripts/render_report.py` |
 
 **Scorecard.** `scorecard_inputs.json` and `scorecard_result.json` are built only through the Sceptical Investor, which runs the scoring engine. Never write or edit a scorecard file yourself, never run `scripts/scorecard.py` yourself, and never change the verdict, score or confidence it prints.
 
@@ -120,7 +121,7 @@ After Stage 2, dispatch `byb-sceptical-investor` with `Stage: 3`. It writes `30_
 
 ### Stage 4: verdict, Report Writer in Quick Check mode
 
-After Stage 3, dispatch `byb-report-writer` with `Mode: Quick Check` and `Stage: 4`. It is the Verdict Writer and writes `50_decision/decision_pack.md`. Compile sources and run `scripts/check_run.py` with `--mode quick --stage 4`. Then give the final summary and offer the upgrade.
+After Stage 3, dispatch `byb-report-writer` with `Mode: Quick Check` and `Stage: 4`. It is the Verdict Writer and writes `50_decision/decision_pack.md`. Compile sources, then build the HTML report with `python3 "<PLUGIN_ROOT>/scripts/render_report.py" "<RUN_DIR>"`, and run `scripts/check_run.py` with `--mode quick --stage 4`. Then give the final summary and offer the upgrade.
 
 ## Full Review stages
 
@@ -176,10 +177,10 @@ After all three Stage 4 agents, dispatch `byb-sceptical-investor` once more with
 
 ### Stage 5: test design, then the Report Writer in Full Review mode
 
-1. Dispatch `byb-validation-test-designer` with `Stage: 5`. Run `scripts/check_run.py` with `--mode full --path <A|B> --stage 5`; at this point the only allowed problems are the missing `50_decision/decision_memo.md` and `50_decision/full_plan.md`. Re-dispatch the Test Designer once if `test_plan.md` or `gate_tracker.csv` is missing, or if `test_plan.md` lacks the disclaimer.
+1. Dispatch `byb-validation-test-designer` with `Stage: 5`. Run `scripts/check_run.py` with `--mode full --path <A|B> --stage 5`; at this point the only allowed problems are the missing `50_decision/decision_memo.md`, `50_decision/full_plan.md` and `50_decision/report.html`. Re-dispatch the Test Designer once if `test_plan.md` or `gate_tracker.csv` is missing, or if `test_plan.md` lacks the disclaimer.
 2. Then dispatch `byb-report-writer` with `Mode: Full Review` and `Stage: 5`. It writes `50_decision/decision_memo.md` and `50_decision/full_plan.md`.
 
-Compile sources and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 5`, which must print `ok`. Then give the final summary.
+Compile sources, then build the HTML report with `python3 "<PLUGIN_ROOT>/scripts/render_report.py" "<RUN_DIR>"`, and run `scripts/check_run.py` with `--mode full --path <A|B> --stage 5`, which must print `ok`. Then give the final summary.
 
 ## Final summary
 
@@ -188,7 +189,7 @@ Read `<RUN_DIR>/30_assessment/scorecard_result.json`, the Report Writer's reply,
 - The verdict, readiness score and confidence, exactly as `scorecard_result.json` gives them. A `Pivot` names the pivot, as the decision file does.
 - If any file's `Search status` says search was unavailable or partly available, say that confidence is lower for this reason.
 - The test in one or two sentences: what it tests, budget, duration and the decision date.
-- The file paths: the decision pack (Quick Check), or the decision memo, full plan, test plan and gate tracker (Full Review), plus `sources.md` and the run folder.
+- The file paths: `50_decision/report.html` first (the report to open in a browser), then the decision pack (Quick Check), or the decision memo, full plan, test plan and gate tracker (Full Review), plus `sources.md` and the run folder.
 - The disclaimer, word for word:
 
 > This report was produced by AI agents using publicly available information and the details you provided. Figures may be incomplete, out of date or wrong; each is marked sourced, estimated or assumed. It is not financial, legal, tax or investment advice. Check important figures yourself and talk to real customers before acting.

@@ -75,12 +75,15 @@ Every test also includes a channel measure: the real cost to win a paying custom
 
 Results are saved on your computer in `~/before-you-build-runs/<idea-slug>-<YYYY-MM-DD>/`.
 
+Start with `50_decision/report.html`. Open it in any browser: it shows the verdict, the readiness score and the seven ratings as charts, the numbers with a switch between the three scenarios, the risks, and the test with its pass, fail and channel lines. Every figure keeps its label, and each sourced label links to its source. The page is one file with no outside scripts or fonts, so it works offline and sends nothing anywhere. A script builds it from the run files, so it shows only what they say.
+
 **Quick Check:**
 
 - `00_brief.md`: your idea and details, as the agents understood them
 - `10_research/`: research notes on market and competition, customer demand, and founder fit
 - `20_model/quick_model.md`: a simple model with three scenarios (Defensive, Moderate, Optimistic)
 - `30_assessment/`: the Sceptical Investor's critique and the scorecard result
+- `50_decision/report.html`: the report to open in a browser
 - `50_decision/decision_pack.md`: the short decision pack
 - `sources.md`: every link used
 
@@ -91,13 +94,13 @@ Results are saved on your computer in `~/before-you-build-runs/<idea-slug>-<YYYY
 - `20_draft/`: the strategy report and first model (Path A), or your uploaded report (Path B)
 - `30_assessment/`: the Sceptical Investor and Investment Banker critiques, the scorecard result and the re-check
 - `40_plan/`: business model, operations and product plan, financials and the rebuilt model
-- `50_decision/`: `decision_memo.md`, `full_plan.md`, `test_plan.md` and `gate_tracker.csv`
+- `50_decision/`: `report.html` (the report to open in a browser), `decision_memo.md`, `full_plan.md`, `test_plan.md` and `gate_tracker.csv`
 
 A Quick Check can be upgraded to a Full Review later.
 
 ## Example
 
-[`examples/lagos-delivery-quick-check/`](examples/lagos-delivery-quick-check/) is a complete Quick Check of a fictional idea: a same-day parcel delivery service for small online sellers in Lagos. Start with the [decision pack](examples/lagos-delivery-quick-check/50_decision/decision_pack.md). The founders are invented; the research is real and every link was checked when the example was made (October 2026). The verdict was Pivot, 48/100, confidence Medium.
+[`examples/lagos-delivery-quick-check/`](examples/lagos-delivery-quick-check/) is a complete Quick Check of a fictional idea: a same-day parcel delivery service for small online sellers in Lagos. Start with the [decision pack](examples/lagos-delivery-quick-check/50_decision/decision_pack.md), or download [`report.html`](examples/lagos-delivery-quick-check/50_decision/report.html) and open it in a browser to see the HTML report. The founders are invented; the research is real and every link was checked when the example was made (October 2026). The verdict was Pivot, 48/100, confidence Medium.
 
 ## Evidence labels
 

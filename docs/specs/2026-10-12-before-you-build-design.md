@@ -177,6 +177,7 @@ Each region pack adds region-specific items (for example: mobile money in Sub-Sa
   30_assessment/*.md
   40_plan/*.md, model_v2.csv                     (Full)
   50_decision/decision_pack.md | decision_memo.md, full_plan.md, test_plan.md, gate_tracker.csv
+  50_decision/report.html       the HTML report, built by scripts/render_report.py from the files above
   sources.md                                     (every link used, with access date)
 ```
 
