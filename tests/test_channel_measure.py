@@ -26,12 +26,27 @@ class ChannelMeasureTests(unittest.TestCase):
                        "inside its budget and dates"):
             self.assertIn(phrase, block, phrase)
 
-    def test_fail_line_fallback(self):
+    def test_line_rule(self):
         block = read(REF + "conventions.md").split("## Channel measure", 1)[1].split("\n## ", 1)[0]
-        for phrase in ("If the Moderate scenario already never breaks even within 24 months",
-                       "never pays back what it cost to win them",
-                       "1 / monthly churn", "one-off cost per new customer"):
+        for phrase in ("Payback cost:", "1 / monthly churn", "one-off cost per new customer",
+                       "the transactions a fixed-length offer includes",
+                       "Moderate cost at or below the payback cost",
+                       "If the Moderate scenario already never breaks even within 24 months",
+                       "the fail line is the payback cost",
+                       "Moderate cost above the payback cost",
+                       "the pass line is at or below the payback cost and the fail line is at or above the Moderate cost",
+                       "The pass line is always lower than the fail line; never set them equal",
+                       "Defensive scenario's cost to acquire a customer",
+                       "Between the lines: change the price or the channel once",
+                       "Say which rule set each line"):
             self.assertIn(phrase, block, phrase)
+
+    def test_agents_use_the_line_rule(self):
+        for stem in ("byb-sceptical-investor", "byb-validation-test-designer"):
+            cover = section(agent(stem), "Must cover")
+            self.assertIn("set by the rule in conventions.md", cover, stem)
+            self.assertIn("payback cost", cover, stem)
+            self.assertIn("lower than the fail line", cover, stem)
 
     def test_sceptic_question_10_includes_it(self):
         cover = section(agent("byb-sceptical-investor"), "Must cover")

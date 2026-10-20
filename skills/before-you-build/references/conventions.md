@@ -29,8 +29,13 @@ Exactly three: `Go to test`, `Pivot`, `Stop`. The best verdict available is `Go 
 Every test includes a channel measure, so the founder learns what it really costs to reach paying customers, not only whether the product works. It is the cost to win a paying customer through the main channel in the plan (for example paid social ads, a marketplace listing, sales agents or direct outreach), measured with real spend or real outreach during the test.
 
 - Formula: cost to win a paying customer = (money spent on the channel + incentives given + paid help for the channel) / paying customers won through it.
-- Pass line: at or below the cost to acquire a customer used in the Moderate scenario.
-- Fail line: at or above the cost at which the Defensive scenario follows, or at which break-even is never within 24 months. If the Moderate scenario already never breaks even within 24 months, that line would fail every result, so use instead the cost at which a customer never pays back what it cost to win them: contribution per transaction x transactions per month x expected months as a customer (1 / monthly churn), minus any one-off cost per new customer (for example starter equipment). Say which rule set the line.
+- Payback cost: the most a customer can cost to win and still pay it back. It is contribution per transaction x the transactions in a customer's expected life (transactions per month x expected months as a customer, 1 / monthly churn, or the transactions a fixed-length offer includes), minus any one-off cost per new customer (for example starter equipment).
+- Set the two lines by comparing the Moderate scenario's cost to acquire a customer with the payback cost:
+  - Moderate cost at or below the payback cost: the pass line is at or below the Moderate cost. The fail line is at or above the cost at which the Defensive scenario follows, or at which break-even is never within 24 months. If the Moderate scenario already never breaks even within 24 months, that line would fail every result, so the fail line is the payback cost.
+  - Moderate cost above the payback cost: the plan's own cost already loses money on every customer, so the pass line is at or below the payback cost and the fail line is at or above the Moderate cost.
+- The pass line is always lower than the fail line; never set them equal. If the rule gives two equal lines, set the fail line at the Defensive scenario's cost to acquire a customer.
+- Between the lines: change the price or the channel once, measure again on the same minimum sample, then decide.
+- Say which rule set each line, with the figures.
 - State the minimum sample (paying customers won through the channel) before the test starts.
 - Record the founder hours spent on the channel next to the measure, because unpaid founder time hides part of the real cost.
 

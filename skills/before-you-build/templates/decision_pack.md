@@ -68,7 +68,7 @@ The cheapest test in the next 90 days.
 - What you measure: <each measure; include money per transaction when the test measures it>
 - Pass line: <measure, formula and line, labelled [E] with how the line was set>
 - Fail line: <measure, formula and line, labelled [E] with how the line was set>
-- Channel measure: <cost to win a paying customer through the main channel: formula, minimum sample, pass line and fail line, labelled [E] with how each line was set, and the founder hours spent on the channel>
+- Channel measure: <cost to win a paying customer through the main channel: formula, minimum sample, payback cost, pass line and a higher fail line, labelled [E] with how each line was set, what a result between them means, and the founder hours spent on the channel>
 - Decide by: <date, on or before the decision deadline, or the conflict and the date the deadline would need to move to>
 
 ## What would change this verdict

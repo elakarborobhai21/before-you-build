@@ -53,8 +53,10 @@ The cost to win a paying customer through the main channel, as set out under `Ch
 - Main channel: <the channel the plan relies on, from `40_plan/business_model.md`>
 - What the founder does: <the spend or outreach, when, and how it fits the test's budget and dates; or that the main test is the channel test>
 - Formula: (money spent on the channel + incentives given + paid help for the channel) / paying customers won through it
-- Pass line: <at or below the cost to acquire a customer in the Moderate scenario, labelled [E] with the figure from `40_plan/model_v2.csv`>
-- Fail line: <at or above the cost at which the Defensive scenario or a break-even of never follows, or the payback fallback in conventions.md when Moderate never breaks even, labelled [E] with the figure and which rule set it>
+- Payback cost: <contribution per transaction x transactions in a customer's expected life - one-off cost per new customer, labelled [E] with the figures>
+- Pass line: <at or below the Moderate cost to acquire a customer, or the payback cost when the Moderate cost is above it, labelled [E] with the figure and which rule set it>
+- Fail line: <higher than the pass line, set by the rule in conventions.md, labelled [E] with the figure and which rule set it>
+- Between the lines: <change the price or the channel once, measure again, then decide>
 - Minimum sample: <paying customers won through the channel before the result is read>
 - Founder hours: <recorded next to the measure>
 
