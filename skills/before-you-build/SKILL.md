@@ -21,7 +21,7 @@ Then ask about one topic at a time, in this order. Wait for the answer before mo
 
 1. **The idea**: what it is, who pays, how it makes money, in the founder's words. Ask for a short name for the idea.
 2. **Region and country**: one of South Asia, Southeast Asia, East Asia, Middle East & North Africa, Sub-Saharan Africa, Europe, North America, Latin America; plus the launch country and city. Record the matching region pack: `south-asia`, `southeast-asia`, `east-asia`, `middle-east-north-africa`, `sub-saharan-africa`, `europe`, `north-america` or `latin-america`.
-3. **Target customer**: who, where, and how they solve the problem today.
+3. **Target customer**: who, where, and how they solve the problem today. Then ask for the founder's conversion rate: of the people who show interest (reply to an ad, ask for a quote, visit), what share do they expect to pay, and where does that figure come from (sales so far, a pilot, a guess)? If they do not know, write `unknown`; the Customer & Demand Analyst then looks for benchmarks.
 4. **Founders**: for each founder, role, relevant experience, current job and employer type, hours per week available, whether and when they can go full-time, and months they can live without salary. Names are optional. Quick Check short form: in a Quick Check ask only for each founder's role, whether they will go full-time (and when), and any current-employer conflict; write `not asked (Quick Check)` in the other fields.
 5. **Money and time**: founder cash available for this idea, outside money already promised, and the decision deadline.
 6. **Existing report** (Full Review only): the founder uploads an existing plan or skips. An upload means Path B; a skip means Path A. Skip this topic in a Quick Check.
@@ -82,7 +82,7 @@ If an agent replies that it stopped because an input file is missing or empty, t
 | `10_research/regulation_structure.md` | byb-regulation-structure-mapper |
 | `10_research/founder_fit.md` | byb-founder-fit-reviewer |
 | `10_research/funding_climate.md` | byb-funding-climate-scout |
-| `20_model/quick_model.md` | byb-quick-modeller |
+| `20_model/quick_model.md`, `20_model/model_inputs.json` | byb-quick-modeller |
 | `20_draft/strategist_notes.md`, `20_draft/strategy_report.md` | byb-strategist (pass 1, pass 2) |
 | `20_draft/model_v1.csv` | byb-draft-modeller |
 | `30_assessment/sceptic.md`, `scorecard_inputs.json`, `scorecard_result.json` | byb-sceptical-investor (Stage 3) |

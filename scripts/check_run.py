@@ -13,6 +13,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import model  # noqa: E402
+
 DISCLAIMER = (
     "This report was produced by AI agents using publicly available information "
     "and the details you provided. Figures may be incomplete, out of date or wrong; "
@@ -25,6 +28,7 @@ VERDICTS = ("Go to test", "Pivot", "Stop")
 MAX_TEST_DAYS = 90
 SCEPTIC = "30_assessment/sceptic.md"
 SCEPTIC_MAX_WORDS = 5000
+MODEL_INPUTS = "20_model/model_inputs.json"
 # "<set-up> weeks set-up plus <live> weeks live (<days> days)"; the words and days are optional.
 DURATION = re.compile(
     r"(\d+)[ -]weeks?(?: of)?(?: set-up)? plus (\d+)(?: live)?[ -]weeks?(?: live)?(?: \((\d+) days\))?")
@@ -34,7 +38,7 @@ QUICK = [
     ["00_brief.md"],
     ["10_research/market_competition.md", "10_research/customer_demand.md",
      "10_research/founder_fit.md", "sources.md"],
-    ["20_model/quick_model.md"],
+    ["20_model/quick_model.md", MODEL_INPUTS],
     ["30_assessment/sceptic.md", "30_assessment/scorecard_inputs.json", RESULT],
     ["50_decision/decision_pack.md", "50_decision/report.html"],
 ]
@@ -103,6 +107,13 @@ def check(run_dir: Path, mode: str, path: str, stage: int) -> list[str]:
             problems.append(f"not valid scorecard JSON with a verdict: {RESULT}")
         elif data["verdict"] not in VERDICTS:
             problems.append(f"verdict is not Go to test, Pivot or Stop: {RESULT}")
+
+    inputs = run_dir / MODEL_INPUTS
+    if MODEL_INPUTS in expected_files(mode, path, stage) and inputs.is_file() and inputs.stat().st_size:
+        try:
+            model.validate(json.loads(inputs.read_text(encoding="utf-8")))
+        except (ValueError, UnicodeDecodeError) as exc:
+            problems.append(f"not valid model inputs: {MODEL_INPUTS} ({exc})")
 
     duration_files = []
     sceptic = run_dir / SCEPTIC

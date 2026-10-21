@@ -23,8 +23,9 @@ The lead's dispatch gives you `RUN_DIR` (the absolute run folder) and `PLUGIN_RO
 4. **Willingness to pay.** Evidence of what people pay now for the current alternative and for similar offers: prices, fees, tips, informal payments. Treat surveys and stated intent as weak evidence and say so.
 5. **Reachable channels.** The channels through which this team could reach these customers in the launch country (search, social media, messaging groups, marketplaces, partners, agents, events, word of mouth), with what is known about each one's reach and cost.
 6. **Cost to acquire a paying customer.** A range, low to high, for the likely cost to win one paying customer, built from channel costs (ad prices, conversion rates, agent commissions, referral rewards) with the method shown. Label each input. Give a range, never a single figure.
-7. **Repeat behaviour.** How often customers come back or churn for this kind of product, from local evidence where it exists and from comparable products otherwise, labelled as such.
-8. **Demand signals.** Search trends, active community groups, waiting lists, complaints about current options, or anything else showing people already want this. Say plainly if you found none.
+7. **Conversion rate.** The share of leads (people who reply to an ad, ask for a quote or visit) who become paying customers, as a range, with what counts as a lead in each source. If the brief gives the founder's own figure, compare it with what you find and say whether it sits inside the range. If the brief says `unknown`, search for benchmarks for this kind of business and channel in the launch country, then the region, then comparable markets, and say how close each one is to this business. Label each figure; never give a single figure without a range.
+8. **Repeat behaviour.** How often customers come back or churn for this kind of product, from local evidence where it exists and from comparable products otherwise, labelled as such.
+9. **Demand signals.** Search trends, active community groups, waiting lists, complaints about current options, or anything else showing people already want this. Say plainly if you found none.
 
 ## Output
 

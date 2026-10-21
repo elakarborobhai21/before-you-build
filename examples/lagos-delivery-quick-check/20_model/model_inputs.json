@@ -1,0 +1,405 @@
+{
+  "currency": "NGN",
+  "usd_rate": 1331,
+  "months": 24,
+  "founder_cash": 18000000,
+  "transaction": "parcel",
+  "customer": "seller",
+  "conversion_label": "Lead-to-seller rate: the share of sellers who reply to an ad or a visit and go on to book a paid parcel.",
+  "conversion_note": "5% to 20% [A] (no local figure; `customer_demand.md`). Cost per lead NGN 500 to 5,000 [S](https://grey.co/blog/facebook-ads-cost-nigeria). Leads and cost per lead are [E], set so that leads x rate and cost per lead / rate give the model's new sellers and cost to win a seller.",
+  "scenarios": {
+    "Defensive": {
+      "unit": [
+        {
+          "line": "Delivery fee billed",
+          "kind": "revenue",
+          "value": 1500.0
+        },
+        {
+          "line": "Fee waived on refused cash parcels",
+          "kind": "revenue",
+          "value": -63.0
+        },
+        {
+          "line": "Cash-on-delivery fee",
+          "kind": "revenue",
+          "value": 92.9
+        },
+        {
+          "line": "Rider pay, first trip",
+          "kind": "cost",
+          "value": -1600.0
+        },
+        {
+          "line": "Re-attempt trips",
+          "kind": "cost",
+          "value": -345.6
+        },
+        {
+          "line": "Return trips, refused parcels",
+          "kind": "cost",
+          "value": -67.2
+        },
+        {
+          "line": "Payment gateway fee",
+          "kind": "cost",
+          "value": -32.5
+        },
+        {
+          "line": "Payout transfer to seller",
+          "kind": "cost",
+          "value": -12.9
+        },
+        {
+          "line": "Cash deposit and handling",
+          "kind": "cost",
+          "value": -27.9
+        },
+        {
+          "line": "Cash loss",
+          "kind": "cost",
+          "value": -92.9
+        },
+        {
+          "line": "Promotions and discounts",
+          "kind": "cost",
+          "value": -120.0
+        },
+        {
+          "line": "Refunds for lost or damaged parcels",
+          "kind": "cost",
+          "value": -108.0
+        },
+        {
+          "line": "Support and notifications",
+          "kind": "cost",
+          "value": -60.0
+        }
+      ],
+      "leads_month_1": 100,
+      "lead_growth": 0.05,
+      "conversion_rate": 0.05,
+      "cost_per_lead": 2000,
+      "transactions_per_customer_month": 21.666666666666668,
+      "churn": 0.08,
+      "first_month_share": 0.5,
+      "fixed_costs": [
+        {
+          "name": "Founder 1 salary",
+          "monthly": 600000
+        },
+        {
+          "name": "Founder 2 salary",
+          "monthly": 900000,
+          "from": 7
+        },
+        {
+          "name": "Contract developer",
+          "monthly": 250000,
+          "to": 6
+        },
+        {
+          "name": "Cash reconciliation clerk",
+          "monthly": 300000
+        },
+        {
+          "name": "Tools, hosting, maps and messaging",
+          "monthly": 200000
+        },
+        {
+          "name": "Hub and cash desk",
+          "monthly": 300000
+        },
+        {
+          "name": "Rider cover, phones and uniforms",
+          "monthly": 150000
+        },
+        {
+          "name": "Accounting, legal and licences",
+          "monthly": 100000
+        },
+        {
+          "name": "Other and contingency",
+          "monthly": 100000
+        }
+      ],
+      "scaling_costs": [
+        {
+          "name": "Dispatcher and support agents",
+          "monthly": 250000,
+          "per_transactions": 3900,
+          "min": 1
+        }
+      ],
+      "one_time": [
+        {
+          "name": "Set-up and cash float",
+          "amount": 2000000,
+          "month": 1
+        }
+      ]
+    },
+    "Moderate": {
+      "unit": [
+        {
+          "line": "Delivery fee billed",
+          "kind": "revenue",
+          "value": 2000.0
+        },
+        {
+          "line": "Fee waived on refused cash parcels",
+          "kind": "revenue",
+          "value": -60.0
+        },
+        {
+          "line": "Cash-on-delivery fee",
+          "kind": "revenue",
+          "value": 145.8
+        },
+        {
+          "line": "Rider pay, first trip",
+          "kind": "cost",
+          "value": -1400.0
+        },
+        {
+          "line": "Re-attempt trips",
+          "kind": "cost",
+          "value": -231.0
+        },
+        {
+          "line": "Return trips, refused parcels",
+          "kind": "cost",
+          "value": -42.0
+        },
+        {
+          "line": "Payment gateway fee",
+          "kind": "cost",
+          "value": -40.0
+        },
+        {
+          "line": "Payout transfer to seller",
+          "kind": "cost",
+          "value": -13.5
+        },
+        {
+          "line": "Cash deposit and handling",
+          "kind": "cost",
+          "value": -29.2
+        },
+        {
+          "line": "Cash loss",
+          "kind": "cost",
+          "value": -48.6
+        },
+        {
+          "line": "Promotions and discounts",
+          "kind": "cost",
+          "value": -100.0
+        },
+        {
+          "line": "Refunds for lost or damaged parcels",
+          "kind": "cost",
+          "value": -54.0
+        },
+        {
+          "line": "Support and notifications",
+          "kind": "cost",
+          "value": -40.0
+        }
+      ],
+      "leads_month_1": 80,
+      "lead_growth": 0.08,
+      "conversion_rate": 0.1,
+      "cost_per_lead": 2750,
+      "transactions_per_customer_month": 34.666666666666664,
+      "churn": 0.05,
+      "first_month_share": 0.5,
+      "fixed_costs": [
+        {
+          "name": "Founder 1 salary",
+          "monthly": 600000
+        },
+        {
+          "name": "Founder 2 salary",
+          "monthly": 900000,
+          "from": 7
+        },
+        {
+          "name": "Contract developer",
+          "monthly": 250000,
+          "to": 6
+        },
+        {
+          "name": "Cash reconciliation clerk",
+          "monthly": 300000
+        },
+        {
+          "name": "Tools, hosting, maps and messaging",
+          "monthly": 150000
+        },
+        {
+          "name": "Hub and cash desk",
+          "monthly": 300000
+        },
+        {
+          "name": "Rider cover, phones and uniforms",
+          "monthly": 150000
+        },
+        {
+          "name": "Accounting, legal and licences",
+          "monthly": 100000
+        },
+        {
+          "name": "Other and contingency",
+          "monthly": 100000
+        }
+      ],
+      "scaling_costs": [
+        {
+          "name": "Dispatcher and support agents",
+          "monthly": 250000,
+          "per_transactions": 3900,
+          "min": 1
+        }
+      ],
+      "one_time": [
+        {
+          "name": "Set-up and cash float",
+          "amount": 2000000,
+          "month": 1
+        }
+      ]
+    },
+    "Optimistic": {
+      "unit": [
+        {
+          "line": "Delivery fee billed",
+          "kind": "revenue",
+          "value": 2500.0
+        },
+        {
+          "line": "Fee waived on refused cash parcels",
+          "kind": "revenue",
+          "value": -48.8
+        },
+        {
+          "line": "Cash-on-delivery fee",
+          "kind": "revenue",
+          "value": 202.0
+        },
+        {
+          "line": "Rider pay, first trip",
+          "kind": "cost",
+          "value": -1200.0
+        },
+        {
+          "line": "Re-attempt trips",
+          "kind": "cost",
+          "value": -133.2
+        },
+        {
+          "line": "Return trips, refused parcels",
+          "kind": "cost",
+          "value": -23.4
+        },
+        {
+          "line": "Payment gateway fee",
+          "kind": "cost",
+          "value": -47.5
+        },
+        {
+          "line": "Payout transfer to seller",
+          "kind": "cost",
+          "value": -14.0
+        },
+        {
+          "line": "Cash deposit and handling",
+          "kind": "cost",
+          "value": -30.3
+        },
+        {
+          "line": "Cash loss",
+          "kind": "cost",
+          "value": -20.2
+        },
+        {
+          "line": "Promotions and discounts",
+          "kind": "cost",
+          "value": -75.0
+        },
+        {
+          "line": "Refunds for lost or damaged parcels",
+          "kind": "cost",
+          "value": -27.0
+        },
+        {
+          "line": "Support and notifications",
+          "kind": "cost",
+          "value": -30.0
+        }
+      ],
+      "leads_month_1": 60,
+      "lead_growth": 0.1,
+      "conversion_rate": 0.2,
+      "cost_per_lead": 3000,
+      "transactions_per_customer_month": 52.0,
+      "churn": 0.03,
+      "first_month_share": 0.5,
+      "fixed_costs": [
+        {
+          "name": "Founder 1 salary",
+          "monthly": 600000
+        },
+        {
+          "name": "Founder 2 salary",
+          "monthly": 900000,
+          "from": 7
+        },
+        {
+          "name": "Contract developer",
+          "monthly": 250000,
+          "to": 6
+        },
+        {
+          "name": "Cash reconciliation clerk",
+          "monthly": 300000
+        },
+        {
+          "name": "Tools, hosting, maps and messaging",
+          "monthly": 120000
+        },
+        {
+          "name": "Hub and cash desk",
+          "monthly": 300000
+        },
+        {
+          "name": "Rider cover, phones and uniforms",
+          "monthly": 150000
+        },
+        {
+          "name": "Accounting, legal and licences",
+          "monthly": 100000
+        },
+        {
+          "name": "Other and contingency",
+          "monthly": 100000
+        }
+      ],
+      "scaling_costs": [
+        {
+          "name": "Dispatcher and support agents",
+          "monthly": 250000,
+          "per_transactions": 3900,
+          "min": 1
+        }
+      ],
+      "one_time": [
+        {
+          "name": "Set-up and cash float",
+          "amount": 2000000,
+          "month": 1
+        }
+      ]
+    }
+  }
+}

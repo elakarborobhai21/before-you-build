@@ -3,7 +3,8 @@
 
 Usage: python3 scripts/render_report.py <run_dir>
 Reads the decision pack (Quick Check) or the decision memo and test plan (Full
-Review), the scorecard files and sources.md, and writes
+Review), the scorecard files, 20_model/model_inputs.json when the run has it
+(see scripts/model.py) and sources.md, and writes
 <run_dir>/50_decision/report.html. The page is one self-contained file: no
 external scripts, fonts or images, so it opens offline and sends nothing
 anywhere. It only shows what the run files say. Prints the path and exits 0;
@@ -16,7 +17,11 @@ import io
 import json
 import re
 import sys
+from datetime import date
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import model  # noqa: E402
 
 DISCLAIMER = (
     "This report was produced by AI agents using publicly available information "
@@ -362,117 +367,363 @@ def mix_html(counts: dict) -> str:
             f'behind areas 1 to 4</span></div></div>')
 
 
+def figure(title: str, sub: str, inner: str, source: str = "") -> str:
+    """A chart in the house style: red tag, bold title, subtitle with units, source line."""
+    src = f'<figcaption>{source}</figcaption>' if source else ""
+    return (f'<figure class="chart"><div class="ctitle">{html.escape(title)}</div>'
+            f'<div class="csub">{sub}</div>{inner}{src}</figure>')
+
+
+def num(v: float) -> str:
+    return f"{v:,.0f}".replace("-", "−")
+
+
+def waterfall_svg(unit: list, cur: str, tx: str = "transaction") -> str:
+    """One transaction from the first revenue line down to the contribution."""
+    row, lw, bw, top = 26, 250, 300, 6
+    run, spans = 0.0, []
+    for line in unit:
+        spans.append((line["line"], run, run + line["value"], line["kind"]))
+        run += line["value"]
+    spans.append((f"Contribution per {tx}", 0.0, run, "total"))
+    lo = min(0.0, *(min(a, b) for _, a, b, _ in spans))
+    hi = max(0.0, *(max(a, b) for _, a, b, _ in spans))
+    x = lambda v: lw + (v - lo) * bw / ((hi - lo) or 1)  # noqa: E731
+    h = row * len(spans) + top + 4
+    parts = [f'<svg class="wf" viewBox="0 0 {lw + bw + 80} {h}" role="img" '
+             f'aria-label="Waterfall from revenue to contribution per transaction, {cur}">',
+             f'<line x1="{x(0):.1f}" x2="{x(0):.1f}" y1="0" y2="{h}" class="zero"/>']
+    for i, (name, a, b, kind) in enumerate(spans):
+        y = top + i * row
+        v = b - a
+        cls = ("pos" if v >= 0 else "neg") if kind == "total" else ("rev" if v >= 0 else "cost")
+        x0, x1 = x(min(a, b)), x(max(a, b))
+        parts.append(f'<text x="{lw - 10}" y="{y + 15}" text-anchor="end" class="an'
+                     f'{" tot" if kind == "total" else ""}">{html.escape(name)}</text>')
+        parts.append(f'<rect x="{x0:.1f}" y="{y + 3}" width="{max(x1 - x0, 1.5):.1f}" height="17" '
+                     f'class="{cls}"><title>{html.escape(name)}: {cur} {num(v)}</title></rect>')
+        parts.append(f'<text x="{x1 + 6:.1f}" y="{y + 15}" class="wv{" tot" if kind == "total" else ""}">'
+                     f'{"+" if v > 0 and kind != "total" else ""}{num(v)}</text>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def model_html(inputs: dict) -> str:
+    """Three versions of the plan, recalculated in the page when the conversion rate changes."""
+    cur = html.escape(str(inputs.get("currency", "")))
+    tx = html.escape(str(inputs.get("transaction", "transaction")))
+    cust = html.escape(str(inputs.get("customer", "customer")))
+    data = json.dumps(inputs).replace("<", "\\u003c")
+    buttons = "".join(
+        f'<button type="button" class="sc-btn v-{sc.lower()}" data-sc="{sc}" '
+        f'aria-pressed="{"true" if sc == "Moderate" else "false"}">{sc}</button>'
+        for sc in SCENARIOS)
+    keys = [("contribution", f"Each {tx} leaves"), ("breakeven", "Covers its costs"),
+            ("test", "Cash for the 90-day test"), ("need", "Cash needed, 24 months"),
+            ("runway", "Founder cash runs out"), ("customers", f"Paying {cust}s, month 24")]
+    tiles = "".join(f'<div class="kpi"><div class="kk">{k}</div><div class="kv" data-k="{key}">–</div>'
+                    f'<div class="ks" data-k="{key}-s"></div></div>' for key, k in keys)
+    label = html.escape(str(inputs.get("conversion_label", "")))
+    note = inline(str(inputs.get("conversion_note", "")))
+    panels = []
+    for sc in SCENARIOS:
+        s = inputs["scenarios"][sc]
+        pct = f'{s["conversion_rate"] * 100:g}'
+        panels.append(
+            f'<div class="ver" data-sc="{sc}"{"" if sc == "Moderate" else " hidden"}>'
+            f'<div class="conv"><div><label for="conv-{sc}">Conversion rate, {sc}</label>'
+            f'<p class="muted">{label}</p></div>'
+            f'<div class="conv-in"><input id="conv-{sc}" class="conv-input" data-sc="{sc}" type="number" '
+            f'min="0.1" max="100" step="0.1" value="{pct}" inputmode="decimal"><span>%</span>'
+            f'<button type="button" class="reset" data-sc="{sc}" data-v="{pct}">Reset to {pct}%</button></div>'
+            f'<p class="ctw">Cost to win one paying {cust}: <b data-k="ctw"></b> '
+            f'<span class="edited" hidden>· your figure, not the run’s</span></p></div>'
+            f'<div class="kpis">{tiles}</div>'
+            + figure("Profit or loss each month", f"{cur}, months 1 to {inputs.get('months', 24)}. "
+                     "Blue is a month that makes money, red a month that loses it.",
+                     '<svg class="js-chart" data-chart="bars" role="img" aria-label="Monthly result"></svg>')
+            + figure(f"What one {tx} earns", f"{cur} per {tx}, {sc} version. Blue lines add money, "
+                     "red lines take it away. The conversion rate does not change this chart.",
+                     waterfall_svg(s["unit"], cur, inputs.get("transaction", "transaction")), "Source: <code>20_model/model_inputs.json</code>")
+            + '</div>')
+    legend = "".join(f'<span><i class="v-{sc.lower()}"></i>{sc}</span>' for sc in SCENARIOS)
+    return (
+        f'<script type="application/json" id="model-data">{data}</script>'
+        f'<p>Three versions of the same plan. <b>Defensive</b> takes the worse end of every range, '
+        f'<b>Moderate</b> the honest middle and <b>Optimistic</b> the better end. Change a version’s '
+        f'conversion rate and every chart and number in that version is worked out again.</p>'
+        f'<p class="muted">Run’s range for the conversion rate: {note}</p>'
+        + figure("Cash in the bank, three versions",
+                 f"Cumulative result from month 1, {cur}. Below the dashed line the founder cash is gone.",
+                 f'<div class="clegend">{legend}<span><i class="ref"></i>Founder cash used up</span></div>'
+                 '<svg class="js-chart" data-chart="cash" role="img" aria-label="Cumulative cash, three versions"></svg>')
+        + f'<div class="sc-bar"><span class="sc-lbl">Open a version</span>'
+          f'<div class="seg" role="group" aria-label="Version">{buttons}</div></div>'
+        + "".join(panels)
+        + '<noscript><p class="muted">Turn on JavaScript to see the charts. The table below has the '
+          'same figures as written.</p></noscript>'
+        + '<p class="muted">The charts are worked out in your browser from <code>20_model/model_inputs.json</code> '
+          'with the formulas in <code>scripts/model.py</code>. The written sections keep the figures the '
+          'agents wrote at the run’s own conversion rates.</p>')
+
+
+RISK_LEVEL = re.compile(r"Likelihood and impact are both (High|Medium|Low)"
+                        r"|Likelihood (High|Medium|Low)\b[^.]*?\bimpact (High|Medium|Low)", re.I)
+
+
+def risks_html(md: str) -> str:
+    """The numbered risks as cards, with likelihood and impact pulled out as chips."""
+    parts = []
+    for kind, data in blocks(md):
+        if kind != "ol":
+            parts.append(render_blocks([(kind, data)]))
+            continue
+        cards = []
+        for n, (text, subs) in enumerate(data, 1):
+            m = RISK_LEVEL.search(text)
+            chips = ""
+            if m:
+                lik, imp = (m.group(1), m.group(1)) if m.group(1) else (m.group(2), m.group(3))
+                chips = "".join(f'<span class="lvl {v.lower()}">{k} {v.capitalize()}</span>'
+                                for k, v in (("Likelihood", lik), ("Impact", imp)))
+            sub = ("<ul>" + "".join(f"<li>{inline(x)}</li>" for x in subs) + "</ul>") if subs else ""
+            cards.append(f'<li class="risk"><div class="nbox">{n}</div><div><div class="chips">{chips}'
+                         f'</div><p>{inline(text)}</p>{sub}</div></li>')
+        parts.append(f'<ol class="risks">{"".join(cards)}</ol>')
+    return "\n".join(parts)
+
+
+DATED = re.compile(r"([A-Za-z][A-Za-z -]*?)[:\s]+(\d{4}-\d{2}-\d{2})")
+
+
+def timeline_svg(md: str) -> str:
+    """Dates named in the test, on one line. Empty when fewer than two dates are named."""
+    seen = {}
+    for clause in re.split(r"[,.;()]", md):
+        m = DATED.search(clause)
+        if not m:
+            continue
+        try:
+            d = date.fromisoformat(m.group(2))
+        except ValueError:
+            continue
+        words = m.group(1).strip(" -").split()[-3:]
+        while words and words[-1].lower() in ("of", "on", "from", "the"):
+            words.pop()
+        if words and d not in seen:
+            seen[d] = " ".join(words)[:1].upper() + " ".join(words)[1:]
+    if len(seen) < 2:
+        return ""
+    days = sorted(seen)
+    span = (days[-1] - days[0]).days or 1
+    w, pad = 640, 70
+    x = lambda d: pad + (d - days[0]).days * (w - 2 * pad) / span  # noqa: E731
+    parts = [f'<svg class="tl" viewBox="0 0 {w} 120" role="img" aria-label="Test timeline">',
+             f'<line x1="{pad}" x2="{w - pad}" y1="60" y2="60" class="axis"/>']
+    for i, d in enumerate(days):
+        up = i % 2 == 0
+        parts.append(f'<circle cx="{x(d):.1f}" cy="60" r="5" class="dot"/>'
+                     f'<line x1="{x(d):.1f}" x2="{x(d):.1f}" y1="{48 if up else 66}" y2="{54 if up else 72}" class="tick"/>'
+                     f'<text x="{x(d):.1f}" y="{26 if up else 92}" text-anchor="middle" class="tlk">'
+                     f'{html.escape(seen[d])}</text>'
+                     f'<text x="{x(d):.1f}" y="{40 if up else 106}" text-anchor="middle">'
+                     f'{d.day} {d.strftime("%b %Y")}</text>')
+    parts.append("</svg>")
+    return figure("The test, step by step", "Dates named in the test below.", "".join(parts))
+
+
 # ---------- Page ----------
 
 CSS = """
-:root{--paper:#f6f6f2;--surface:#fdfdfb;--ink:#13171c;--ink-2:#4b5058;--ink-3:#7d8288;
---line:#dfe0da;--line-2:#c7c9c2;--accent:#0b6e4f;--accent-soft:#e3f0ea;
---go:#0b7a4b;--go-soft:#dff1e8;--pivot:#a86a00;--pivot-soft:#f8ecd3;--stop:#b8323a;--stop-soft:#f6e0e1;
---s:#0b6e4f;--e:#2a6fc4;--a:#a86a00;--adequate:#6f9a3a;--r:10px;
---f-display:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+:root{--paper:#ffffff;--panel:#e9edf0;--surface:#ffffff;--ink:#0c0c0c;--ink-2:#3f5661;--ink-3:#758d99;
+--line:#d9dee2;--line-2:#b7c6cf;--tag:#e3120b;--accent:#006ba2;--accent-soft:#e1edf5;
+--go:#2e8577;--go-soft:#e1f1ee;--pivot:#8d6300;--pivot-soft:#fbf0d4;--stop:#c7303c;--stop-soft:#f9e1e1;
+--s:#379a8b;--e:#006ba2;--a:#b07c00;--blue:#006ba2;--red:#db444b;--light:#5da4df;--dark:#a81829;
+--def:#db444b;--mod:#006ba2;--opt:#3ebcd2;--r:4px;
+--f-display:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+--f-chart:"Avenir Next Condensed","Roboto Condensed","Arial Narrow","Helvetica Neue",sans-serif;
 --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 --f-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#111416;--surface:#181c1f;
---ink:#eef0ec;--ink-2:#b9bdb8;--ink-3:#868b88;--line:#2a2f33;--line-2:#3a4045;--accent:#3fbf8f;
---accent-soft:#16302a;--go:#3fbf8f;--go-soft:#16302a;--pivot:#e0a43a;--pivot-soft:#33280f;
---stop:#ef6b6f;--stop-soft:#3a1c1e;--s:#3fbf8f;--e:#6aa5f0;--a:#e0a43a;--adequate:#9cc464;color-scheme:dark}}
-:root[data-theme="dark"]{--paper:#111416;--surface:#181c1f;--ink:#eef0ec;--ink-2:#b9bdb8;
---ink-3:#868b88;--line:#2a2f33;--line-2:#3a4045;--accent:#3fbf8f;--accent-soft:#16302a;--go:#3fbf8f;
---go-soft:#16302a;--pivot:#e0a43a;--pivot-soft:#33280f;--stop:#ef6b6f;--stop-soft:#3a1c1e;
---s:#3fbf8f;--e:#6aa5f0;--a:#e0a43a;--adequate:#9cc464;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#121518;--panel:#1c2328;--surface:#171c20;
+--ink:#f2f4f5;--ink-2:#b7c6cf;--ink-3:#89a2ae;--line:#2b343a;--line-2:#3f4b52;--accent:#5da4df;--accent-soft:#16283a;
+--go:#4dad9e;--go-soft:#14302b;--pivot:#ebb434;--pivot-soft:#33290d;--stop:#ff6b6c;--stop-soft:#3a1c1e;
+--s:#4dad9e;--e:#5da4df;--a:#ebb434;--blue:#5da4df;--red:#ff6b6c;--light:#98daff;--dark:#ff8785;
+--def:#ff6b6c;--mod:#5da4df;--opt:#4ec8de;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#121518;--panel:#1c2328;--surface:#171c20;--ink:#f2f4f5;--ink-2:#b7c6cf;
+--ink-3:#89a2ae;--line:#2b343a;--line-2:#3f4b52;--accent:#5da4df;--accent-soft:#16283a;--go:#4dad9e;
+--go-soft:#14302b;--pivot:#ebb434;--pivot-soft:#33290d;--stop:#ff6b6c;--stop-soft:#3a1c1e;--s:#4dad9e;
+--e:#5da4df;--a:#ebb434;--blue:#5da4df;--red:#ff6b6c;--light:#98daff;--dark:#ff8785;--def:#ff6b6c;
+--mod:#5da4df;--opt:#4ec8de;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15.5px/1.6 var(--f-body)}
 a{color:var(--accent)}
-.shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;max-width:1180px;margin:0 auto;padding:0 24px 80px}
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr);gap:44px;max-width:1180px;margin:0 auto;padding:0 24px 80px}
 .rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:28px 0}
-.rail .brand{font:700 17px/1.25 var(--f-display)}
+.rail .brand{font:700 16px/1.25 var(--f-display);border-top:6px solid var(--tag);padding-top:10px}
 .rail .brand small{display:block;font:400 11.5px var(--f-body);color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 .rail ol{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:1px}
-.rail a{display:block;padding:5px 8px;border-radius:6px;text-decoration:none;color:var(--ink-2);font-size:13.5px;line-height:1.35}
-.rail a:hover,.rail a.on{background:var(--accent-soft);color:var(--ink)}
+.rail a{display:block;padding:5px 8px;border-left:3px solid transparent;text-decoration:none;color:var(--ink-2);font-size:13.5px;line-height:1.35}
+.rail a:hover,.rail a.on{background:var(--panel);border-left-color:var(--tag);color:var(--ink)}
 .mnav{display:none}
 main{min-width:0;padding-top:28px}
-.hero .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
-.hero h1{font:700 clamp(30px,4.6vw,48px)/1.06 var(--f-display);letter-spacing:-.02em;margin:10px 0 12px;max-width:22ch;text-wrap:balance}
+.hero .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--tag);font-weight:700}
+.hero h1{font:700 clamp(30px,4.6vw,46px)/1.06 var(--f-display);letter-spacing:-.02em;margin:10px 0 12px;max-width:22ch;text-wrap:balance}
 .meta{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--ink-3)}
 .meta b{font-weight:500;color:var(--ink-2)}
 .intro{color:var(--ink-2);max-width:70ch}
 .verdict{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px;margin:26px 0 6px}
-.vcard{border-radius:var(--r);padding:20px 22px;border:1px solid var(--line);background:var(--surface)}
+.vcard{border-radius:var(--r);padding:20px 22px;background:var(--panel);border-top:6px solid var(--line-2)}
 .vcard .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
 .vword{font:700 clamp(34px,5vw,46px)/1.05 var(--f-display);margin:6px 0 8px}
-.vcard.go{background:var(--go-soft);border-color:var(--go)}.vcard.go .vword{color:var(--go)}
-.vcard.pivot{background:var(--pivot-soft);border-color:var(--pivot)}.vcard.pivot .vword{color:var(--pivot)}
-.vcard.stop{background:var(--stop-soft);border-color:var(--stop)}.vcard.stop .vword{color:var(--stop)}
+.vcard.go{background:var(--go-soft);border-top-color:var(--go)}.vcard.go .vword{color:var(--go)}
+.vcard.pivot{background:var(--pivot-soft);border-top-color:var(--pivot)}.vcard.pivot .vword{color:var(--pivot)}
+.vcard.stop{background:var(--stop-soft);border-top-color:var(--stop)}.vcard.stop .vword{color:var(--stop)}
 .vcard ul{margin:8px 0 0;padding-left:18px;font-size:14px}
 .score{display:flex;align-items:baseline;gap:10px}
-.score .n{font:700 40px/1 var(--f-display)}
+.score .n{font:700 44px/1 var(--f-display)}
 .chip{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2)}
 svg{display:block;width:100%;height:auto;overflow:visible}
-svg text{fill:var(--ink-3);font:11.5px var(--f-body)}
-.gauge{margin-top:22px}.gauge text{font-size:15px}.gauge .z-stop{fill:var(--stop-soft)}.gauge .z-pivot{fill:var(--pivot-soft)}.gauge .z-go{fill:var(--go-soft)}
-.gauge .mark{stroke:var(--ink);stroke-width:3}.gauge .mark-t{fill:var(--ink);font-weight:700;font-size:16px}
-.ratings .grid{stroke:var(--line)}.ratings .an{fill:var(--ink-2);font-size:13px}.ratings .rv{fill:var(--ink-2);font-size:12px}
-.ratings .r0{fill:var(--stop)}.ratings .r1{fill:var(--pivot)}.ratings .r2{fill:var(--adequate)}.ratings .r3{fill:var(--go)}
+svg text{fill:var(--ink-2);font:13px var(--f-chart)}
+.gauge{margin-top:22px}.gauge text{font-size:15px}
+.gauge .z-stop{fill:color-mix(in srgb,var(--stop) 22%,transparent)}.gauge .z-pivot{fill:color-mix(in srgb,var(--pivot) 22%,transparent)}.gauge .z-go{fill:color-mix(in srgb,var(--go) 22%,transparent)}
+.gauge .mark{stroke:var(--ink);stroke-width:3}.gauge .mark-t{fill:var(--ink);font-weight:700;font-size:17px}
+.ratings .grid{stroke:var(--line)}.ratings .an{fill:var(--ink);font-size:14px}.ratings .rv{fill:var(--ink-2);font-size:13px}
+.ratings .r0{fill:var(--dark)}.ratings .r1{fill:var(--red)}.ratings .r2{fill:var(--light)}.ratings .r3{fill:var(--blue)}
 .ratings .before{stroke:var(--ink);stroke-width:2;stroke-dasharray:3 3}
-section{padding:40px 0 4px;border-top:1px solid var(--line);margin-top:34px;scroll-margin-top:16px}
-h2{font:700 clamp(22px,2.8vw,29px)/1.2 var(--f-display);letter-spacing:-.012em;margin:0 0 12px}
-h3{font:600 17px var(--f-display);margin:22px 0 6px}
+section{padding:36px 0 4px;margin-top:30px;scroll-margin-top:16px}
+h2{font:700 clamp(22px,2.8vw,28px)/1.2 var(--f-display);letter-spacing:-.012em;margin:0 0 12px}
+h2::before{content:"";display:block;width:44px;height:7px;background:var(--tag);margin-bottom:12px}
+h3{font:700 17px var(--f-display);margin:22px 0 6px}
 p,li{max-width:74ch}
 .muted{color:var(--ink-3);font-size:13px}
-.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:12px 0}
-.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin:12px 0}
+.box{background:var(--surface);border-top:1px solid var(--ink);padding:14px 0;margin:12px 0}
+.tw{overflow-x:auto;border-top:1px solid var(--ink);background:var(--surface);margin:12px 0}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:600;font-size:12.5px;color:var(--ink-2);background:var(--paper)}
-tr:last-child td{border-bottom:0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;font-size:12.5px;color:var(--ink-2)}
+tbody tr:nth-child(odd) td{background:color-mix(in srgb,var(--panel) 55%,transparent)}
 blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--line-2);color:var(--ink-2)}
-code{font:13px var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:4px}
-.lab{display:inline-block;font:700 10.5px/1 var(--f-mono);padding:3px 5px;border-radius:4px;margin:0 2px;vertical-align:1px;text-decoration:none;color:#fff}
+code{font:13px var(--f-mono);background:var(--panel);padding:1px 5px;border-radius:3px}
+.lab{display:inline-block;font:700 10.5px/1 var(--f-mono);padding:3px 5px;border-radius:3px;margin:0 2px;vertical-align:1px;text-decoration:none;color:#fff}
 .lab.s{background:var(--s)}.lab.e{background:var(--e)}.lab.a{background:var(--a)}
 a.lab.s:hover{outline:2px solid var(--s);outline-offset:1px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--ink-2);margin-top:12px}
-.mix{margin:14px 0}.mixbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px}
+.mix{margin:14px 0}.mixbar{display:flex;height:12px;overflow:hidden;gap:2px}
 .mx.s,.mixkey i.s{background:var(--s)}.mx.e,.mixkey i.e{background:var(--e)}.mx.a,.mixkey i.a{background:var(--a)}
 .mixkey{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--ink-2);margin-top:8px}
-.mixkey i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.sc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:12px 0}
+.mixkey i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.chart{margin:22px 0;padding:0}
+.chart::before{content:"";display:block;width:32px;height:6px;background:var(--tag);margin-bottom:8px}
+.ctitle{font:700 17px/1.25 var(--f-display)}
+.csub{font-size:13.5px;color:var(--ink-2);margin:2px 0 10px}
+.chart figcaption{font-size:12px;color:var(--ink-3);margin-top:6px}
+.clegend{display:flex;flex-wrap:wrap;gap:4px 16px;font:13px var(--f-chart);color:var(--ink-2);margin-bottom:6px}
+.clegend i{display:inline-block;width:14px;height:4px;margin-right:6px;vertical-align:3px}
+.clegend i.v-defensive{background:var(--def)}.clegend i.v-moderate{background:var(--mod)}.clegend i.v-optimistic{background:var(--opt)}
+.clegend i.ref{background:none;border-top:2px dashed var(--ink-2);height:0}
+.js-chart .grid{stroke:var(--line)}.js-chart .zero,.wf .zero{stroke:var(--ink);stroke-width:1.2}
+.js-chart .ln{fill:none;stroke-width:2.6;stroke-linejoin:round}
+.js-chart .ln.v-defensive{stroke:var(--def)}.js-chart .ln.v-moderate{stroke:var(--mod)}.js-chart .ln.v-optimistic{stroke:var(--opt)}
+.js-chart .ln.dim{opacity:.35}
+.js-chart .refl{stroke:var(--ink-2);stroke-width:1.4;stroke-dasharray:5 4}
+.js-chart .pos,.wf .pos,.wf .rev{fill:var(--blue)}.js-chart .neg,.wf .neg,.wf .cost{fill:var(--red)}
+.js-chart .endl{font-weight:700}.js-chart .endl.v-defensive{fill:var(--def)}.js-chart .endl.v-moderate{fill:var(--mod)}.js-chart .endl.v-optimistic{fill:var(--opt)}
+.wf .an{fill:var(--ink);font-size:13.5px}.wf .tot{font-weight:700}.wf .wv{font-size:13px}
+.sc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:18px 0 12px}
 .sc-lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:3px;background:var(--surface);gap:2px}
-.seg button{font:inherit;font-size:13.5px;border:0;background:transparent;color:var(--ink-2);padding:6px 14px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
-.seg button:focus-visible,.rail a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border-bottom:2px solid var(--line);gap:4px}
+.seg button{font:600 15px var(--f-display);border:0;background:transparent;color:var(--ink-2);padding:8px 14px;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px}
+.seg button[aria-pressed="true"]{color:var(--ink)}
+.seg button.v-defensive[aria-pressed="true"]{border-bottom-color:var(--def)}.seg button.v-moderate[aria-pressed="true"]{border-bottom-color:var(--mod)}.seg button.v-optimistic[aria-pressed="true"]{border-bottom-color:var(--opt)}
+.seg button:not(.v-defensive):not(.v-moderate):not(.v-optimistic)[aria-pressed="true"]{border-bottom-color:var(--ink)}
+.seg button:focus-visible,.rail a:focus-visible,.conv input:focus-visible,.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.conv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:center;background:var(--panel);padding:16px 18px;border-left:6px solid var(--tag);margin:6px 0 16px}
+.conv label{font:700 16px var(--f-display)}.conv p{margin:2px 0 0}
+.conv-in{display:flex;align-items:center;gap:8px}
+.conv-in input{font:700 28px/1 var(--f-display);width:4.6em;padding:6px 8px;border:2px solid var(--ink-2);border-radius:var(--r);background:var(--surface);color:var(--ink);text-align:right}
+.conv-in span{font:700 24px var(--f-display);color:var(--ink-2)}
+.reset{font:inherit;font-size:13px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);padding:6px 10px;border-radius:var(--r);cursor:pointer}
+.ctw{grid-column:1/-1;font-size:14px;color:var(--ink-2)}.ctw b{color:var(--ink)}
+.edited{color:var(--tag)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border-top:2px solid var(--ink);margin:6px 0 4px}
+.kpi{background:var(--surface);padding:14px 14px 12px;min-width:0}
+.kk{font-size:13px;color:var(--ink-3);line-height:1.3}
+.kv{font:700 28px/1.15 var(--f-display);margin-top:6px;letter-spacing:-.01em;overflow-wrap:anywhere}
+.kv.bad{color:var(--red)}.kv.good{color:var(--blue)}
+.ks{font-size:12.5px;color:var(--ink-3);margin-top:2px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:10px 0 4px}
-.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0}
+.tile{background:var(--panel);padding:14px 16px;min-width:0}
 .tile .tk{font-size:12.5px;color:var(--ink-3);line-height:1.4}
 .sc-val{font:700 19px/1.3 var(--f-display);margin-top:6px;overflow-wrap:anywhere}
-.sc-note{font-size:12.5px;color:var(--ink-2);margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+.sc-note{font-size:12.5px;color:var(--ink-2);margin-top:8px;border-top:1px dashed var(--line-2);padding-top:6px}
 .sc-note span{color:var(--ink-3)}
 details{margin:10px 0}summary{cursor:pointer;color:var(--ink-2);font-size:14px}
+ol.risks{list-style:none;padding:0;margin:14px 0;display:grid;gap:12px}
+.risk{display:grid;grid-template-columns:52px minmax(0,1fr);gap:16px;background:var(--panel);padding:16px 18px 6px}
+.risk p{margin:6px 0 10px}
+.nbox{font:700 30px/52px var(--f-display);text-align:center;background:var(--line-2);color:var(--surface);height:52px}
+.risk:first-child .nbox{background:var(--tag);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.lvl{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line-2)}
+.lvl.high{background:var(--red);border-color:var(--red);color:#fff}.lvl.medium{background:var(--pivot-soft);border-color:var(--pivot);color:var(--pivot)}
+.tl .axis{stroke:var(--ink);stroke-width:2}.tl .dot{fill:var(--tag)}.tl .tick{stroke:var(--ink-2)}.tl .tlk{fill:var(--ink);font-weight:700;font-size:14px}
 dl.test{display:grid;gap:8px;margin:14px 0}
-.trow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line-2);border-radius:var(--r);padding:12px 16px}
-.trow dt{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.trow{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;background:var(--surface);border-bottom:1px solid var(--line);border-left:6px solid var(--line-2);padding:12px 16px}
+.trow dt{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding-top:2px;font-weight:600}
 .trow dd{margin:0}.trow dd ul{margin:6px 0 0;padding-left:18px}
-.trow.pass{border-left-color:var(--go)}.trow.fail{border-left-color:var(--stop)}
-.trow.channel{border-left-color:var(--e);background:color-mix(in srgb,var(--e) 7%,var(--surface))}
+.trow.pass{border-left-color:var(--go);background:var(--go-soft)}.trow.fail{border-left-color:var(--stop);background:var(--stop-soft)}
+.trow.channel{border-left-color:var(--e);background:var(--accent-soft)}
 .trow.date{border-left-color:var(--ink)}.trow.wide{grid-template-columns:minmax(0,1fr)}
-.disclaimer{margin-top:40px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink-2);font-size:14px}
+.disclaimer{margin-top:40px;padding:16px 18px;background:var(--panel);color:var(--ink-2);font-size:14px}
 .foot{font-size:12.5px;color:var(--ink-3);margin-top:12px}
 @media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px 60px}.rail{display:none}
-.mnav{display:block;margin:16px 0 0}.mnav select{font:inherit;width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
-.verdict{grid-template-columns:minmax(0,1fr)}.trow{grid-template-columns:minmax(0,1fr);gap:2px}}
-@media print{.rail,.mnav,.sc-bar{display:none}.shell{display:block}.sc-val[hidden]{display:block!important}
+.mnav{display:block;margin:16px 0 0}.mnav select{font:inherit;width:100%;padding:8px 10px;border-radius:var(--r);border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+.verdict{grid-template-columns:minmax(0,1fr)}.trow{grid-template-columns:minmax(0,1fr);gap:2px}
+.conv{grid-template-columns:minmax(0,1fr)}.risk{grid-template-columns:40px minmax(0,1fr);gap:12px}.nbox{font-size:22px;line-height:40px;height:40px}
+.kv{font-size:23px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{.rail,.mnav,.sc-bar,.reset{display:none}.shell{display:block}.sc-val[hidden],.ver[hidden]{display:block!important}
 .sc-val::before{content:attr(data-sc) ": ";font-weight:400;color:var(--ink-3);font-size:12px}section{break-inside:avoid-page}}
+"""
+
+# The same formulas as calc() in model.py; tests/test_model.py checks they agree.
+MODEL_JS = """
+function calc(sc,months,cash,conv){
+  if(conv==null)conv=sc.conversion_rate;
+  var revenue=0,contribution=0;
+  sc.unit.forEach(function(l){contribution+=l.value;if(l.kind==='revenue')revenue+=l.value});
+  var active=0,cum=0,rows=[],be=null,out=null;
+  for(var t=1;t<=months;t++){
+    var leads=sc.leads_month_1*Math.pow(1+sc.lead_growth,t-1),nw=leads*conv,kept=active*(1-sc.churn);
+    active=kept+nw;
+    var tx=(kept+sc.first_month_share*nw)*sc.transactions_per_customer_month,acq=leads*sc.cost_per_lead,fixed=0,once=0;
+    (sc.fixed_costs||[]).forEach(function(l){if((l.from||1)<=t&&t<=(l.to||months))fixed+=l.monthly});
+    (sc.scaling_costs||[]).forEach(function(l){fixed+=Math.max(l.min||0,Math.ceil(tx/l.per_transactions))*l.monthly});
+    (sc.one_time||[]).forEach(function(l){if((l.month||1)===t)once+=l.amount});
+    var margin=tx*contribution,result=margin-acq-fixed-once;
+    cum+=result;
+    if(be===null&&margin>=acq+fixed)be=t;
+    if(out===null&&cum<-cash)out=t;
+    rows.push({month:t,new_customers:nw,active_customers:active,transactions:tx,revenue:tx*revenue,
+      variable_cost:tx*(revenue-contribution),acquisition:acq,fixed:fixed+once,result:result,cumulative:cum});
+  }
+  var low=Math.min.apply(null,rows.map(function(r){return r.cumulative}));
+  var low3=Math.min.apply(null,rows.slice(0,3).map(function(r){return r.cumulative}));
+  return {conversion_rate:conv,cost_to_win_customer:sc.cost_per_lead/conv,revenue_per_transaction:revenue,
+    contribution_per_transaction:contribution,break_even_month:be,cash_for_90_day_test:Math.max(0,-low3),
+    cash_need:Math.max(0,-low),still_falling:rows[rows.length-1].cumulative<=low,cash_runs_out_month:out,months:rows};
+}
 """
 
 JS = """
 (function(){
+  var vers=document.querySelectorAll('.ver');
   var btns=document.querySelectorAll('.sc-btn');
-  btns.forEach(function(b){b.addEventListener('click',function(){
-    var sc=b.getAttribute('data-sc');
+  function show(sc){
     btns.forEach(function(x){x.setAttribute('aria-pressed',x.getAttribute('data-sc')===sc?'true':'false')});
-    document.querySelectorAll('.sc-val').forEach(function(v){v.hidden=v.getAttribute('data-sc')!==sc});
-  })});
+    document.querySelectorAll('.sc-val,.ver').forEach(function(v){v.hidden=v.getAttribute('data-sc')!==sc});
+    if(window.__drawModel)window.__drawModel(sc);
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){show(b.getAttribute('data-sc'))})});
   var sel=document.getElementById('mnavSel');
   if(sel){sel.addEventListener('change',function(){var t=document.getElementById(sel.value);if(t)t.scrollIntoView()})}
   var links=document.querySelectorAll('.rail a');
@@ -482,6 +733,99 @@ JS = """
       {rootMargin:'-20% 0px -70% 0px'});
     document.querySelectorAll('main section').forEach(function(s){io.observe(s)});
   }
+  var el=document.getElementById('model-data');
+  if(!el||!vers.length)return;
+  var M=JSON.parse(el.textContent),SC=['Defensive','Moderate','Optimistic'],N=M.months||24,CUR=M.currency||'';
+  var conv={},open='Moderate';
+  SC.forEach(function(s){conv[s]=M.scenarios[s].conversion_rate});
+  var MINUS='\\u2212';
+  function unit(a){return a>=1e9?[1e9,'bn']:a>=1e6?[1e6,'m']:a>=1e3?[1e3,'k']:[1,'']}
+  function short(v,u){var x=v/u[0],d=Math.abs(x)>=100||u[0]===1?0:1;
+    return (x<0?MINUS:'')+Math.abs(x).toFixed(d).replace(/\\.0$/,'')+u[1]}
+  function money(v,cur){var u=unit(Math.abs(v));return (v<0?MINUS:'')+(cur||CUR)+' '+short(Math.abs(v),u)}
+  function usd(v){return M.usd_rate&&CUR!=='USD'?'USD '+short(v/M.usd_rate,unit(Math.abs(v/M.usd_rate))):''}
+  function whole(v){return (v<0?MINUS:'')+Math.round(Math.abs(v)).toLocaleString('en-US')}
+  function nice(x){var e=Math.pow(10,Math.floor(Math.log10(x))),f=x/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+  function frame(svg,vals,bars){
+    var W=640,H=260,L=6,R=54,T=12,B=26;
+    var lo=Math.min.apply(null,[0].concat(vals)),hi=Math.max.apply(null,[0].concat(vals));
+    if(hi===lo)hi=lo+1;
+    var st=nice((hi-lo)/5);lo=Math.floor(lo/st)*st;hi=Math.ceil(hi/st)*st;
+    var u=unit(Math.max(Math.abs(lo),Math.abs(hi))),p=[];
+    var y=function(v){return T+(hi-v)*(H-T-B)/(hi-lo)};
+    var x=bars?function(i){return L+(i+0.5)*(W-L-R)/N}:function(i){return L+i*(W-L-R)/(N-1)};
+    for(var v=lo;v<=hi+st/2;v+=st){
+      p.push('<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" class="'+(Math.abs(v)<st/2?'zero':'grid')+'"/>');
+      p.push('<text x="'+(W-R+8)+'" y="'+(y(v)+4)+'">'+short(v,u)+'</text>');
+    }
+    [1,6,12,18,N].forEach(function(m){if(m<=N)p.push('<text x="'+x(m-1)+'" y="'+(H-6)+'" text-anchor="middle">'+(m===1?'Month 1':m)+'</text>')});
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    return {p:p,x:x,y:y,W:W,R:R,L:L,u:u};
+  }
+  function drawCash(svg){
+    var res={},vals=[-M.founder_cash];
+    SC.forEach(function(s){res[s]=calc(M.scenarios[s],N,M.founder_cash,conv[s]);
+      res[s].months.forEach(function(r){vals.push(r.cumulative)})});
+    var f=frame(svg,vals,false),p=f.p,ry=f.y(-M.founder_cash),ends=[];
+    p.push('<line x1="'+f.L+'" x2="'+(f.W-f.R)+'" y1="'+ry+'" y2="'+ry+'" class="refl"/>');
+    p.push('<text x="'+(f.L+4)+'" y="'+(ry+16)+'">Founder cash '+money(M.founder_cash)+' used up</text>');
+    SC.forEach(function(s){
+      var d=res[s].months.map(function(r,i){return (i?'L':'M')+f.x(i).toFixed(1)+' '+f.y(r.cumulative).toFixed(1)}).join('');
+      p.push('<path d="'+d+'" class="ln v-'+s.toLowerCase()+(s===open?'':' dim')+'"><title>'+s+'</title></path>');
+      ends.push([f.y(res[s].months[N-1].cumulative),s]);
+    });
+    ends.sort(function(a,b){return a[0]-b[0]});
+    for(var i=1;i<ends.length;i++)if(ends[i][0]-ends[i-1][0]<15)ends[i][0]=ends[i-1][0]+15;
+    ends.forEach(function(e){var v=res[e[1]].months[N-1].cumulative;
+      p.push('<text x="'+(f.W-f.R-4)+'" y="'+(e[0]-6).toFixed(1)+'" text-anchor="end" class="endl v-'+e[1].toLowerCase()+'">'+
+        e[1]+' '+short(v,unit(Math.abs(v)))+'</text>')});
+    svg.innerHTML=p.join('');
+  }
+  function drawBars(svg,r){
+    var f=frame(svg,r.months.map(function(m){return m.result}),true),p=f.p,w=(f.W-f.L-f.R)/N*0.72;
+    r.months.forEach(function(m,i){
+      var y0=f.y(0),y1=f.y(m.result);
+      p.push('<rect x="'+(f.x(i)-w/2).toFixed(1)+'" y="'+Math.min(y0,y1).toFixed(1)+'" width="'+w.toFixed(1)+
+        '" height="'+Math.max(Math.abs(y1-y0),1).toFixed(1)+'" class="'+(m.result>=0?'pos':'neg')+
+        '"><title>Month '+m.month+': '+money(m.result)+'</title></rect>');
+    });
+    svg.innerHTML=p.join('');
+  }
+  function put(box,k,v,s,cls){
+    var a=box.querySelector('[data-k="'+k+'"]'),b=box.querySelector('[data-k="'+k+'-s"]');
+    if(a){a.textContent=v;a.className='kv'+(cls?' '+cls:'')}if(b)b.textContent=s||'';
+  }
+  function draw(sc){
+    if(sc)open=sc;
+    var box=document.querySelector('.ver[data-sc="'+open+'"]'),s=M.scenarios[open];
+    var r=calc(s,N,M.founder_cash,conv[open]),last=r.months[N-1];
+    box.querySelector('[data-k="ctw"]').textContent=money(r.cost_to_win_customer)+(usd(r.cost_to_win_customer)?' ('+usd(r.cost_to_win_customer)+')':'');
+    box.querySelector('.edited').hidden=Math.abs(conv[open]-s.conversion_rate)<1e-9;
+    var c=r.contribution_per_transaction;
+    put(box,'contribution',(c<0?MINUS:'')+CUR+' '+whole(Math.abs(c)),c<0?'a loss on every one':'after its own costs',c<0?'bad':'good');
+    put(box,'breakeven',r.break_even_month?'Month '+r.break_even_month:'Not in '+N+' months',
+      r.break_even_month?'monthly profit covers fixed costs and marketing':'monthly costs stay above what comes in',r.break_even_month?'good':'bad');
+    put(box,'test',money(r.cash_for_90_day_test),usd(r.cash_for_90_day_test));
+    put(box,'need',money(r.cash_need),(usd(r.cash_need)?usd(r.cash_need)+', ':'')+(r.still_falling?'and still falling at month '+N:'lowest point'),r.still_falling?'bad':'');
+    put(box,'runway',r.cash_runs_out_month?'Month '+r.cash_runs_out_month:'Lasts '+N+' months',
+      'founder cash '+money(M.founder_cash),r.cash_runs_out_month?'bad':'good');
+    put(box,'customers',whole(last.active_customers),whole(last.transactions)+' '+(M.transaction||'transaction')+'s that month');
+    box.querySelectorAll('svg[data-chart="bars"]').forEach(function(g){drawBars(g,r)});
+    document.querySelectorAll('svg[data-chart="cash"]').forEach(drawCash);
+  }
+  window.__drawModel=draw;
+  document.querySelectorAll('.conv-input').forEach(function(inp){
+    inp.addEventListener('input',function(){
+      var v=parseFloat(inp.value);
+      if(!(v>0&&v<=100))return;
+      conv[inp.getAttribute('data-sc')]=v/100;draw(inp.getAttribute('data-sc'));
+    });
+  });
+  document.querySelectorAll('.reset').forEach(function(b){b.addEventListener('click',function(){
+    var sc=b.getAttribute('data-sc'),inp=document.getElementById('conv-'+sc);
+    inp.value=b.getAttribute('data-v');conv[sc]=M.scenarios[sc].conversion_rate;draw(sc);
+  })});
+  draw('Moderate');
 })();
 """
 
@@ -522,6 +866,12 @@ def render(run_dir) -> Path:
         raise RenderError("missing or not valid: 30_assessment/scorecard_result.json")
     inputs = load_json(run / "30_assessment" / "scorecard_inputs.json") or {}
     before = load_json(run / "30_assessment" / "scorecard_inputs_v1.json") if full else None
+    model_inputs = load_json(run / "20_model" / "model_inputs.json")
+    if model_inputs is not None:
+        try:
+            model.validate(model_inputs)
+        except model.ModelError as exc:
+            raise RenderError(f"20_model/model_inputs.json: {exc}")
 
     doc = parse_doc(read(main_file))
     name = re.sub(r"^(Decision pack|Decision memo):\s*", "", doc["title"]) or "Before You Build"
@@ -563,14 +913,20 @@ def render(run_dir) -> Path:
         elif low in ("what the numbers say", "key numbers"):
             bl = blocks(md)
             n, found = scenario_table(bl)
-            if found:
+            if found and model_inputs:
+                content = (model_html(model_inputs) + render_blocks(bl[:n] + bl[n + 1:]) +
+                           "<details><summary>The figures as written in this file</summary>"
+                           f"{table_html(bl[n][1])}</details>")
+            elif found:
                 tbl = table_html(bl[n][1])
                 content = (scenario_html(found) + render_blocks(bl[:n] + bl[n + 1:]) +
                            f"<details><summary>All scenarios side by side</summary>{tbl}</details>")
             else:
                 content = render_blocks(bl)
+        elif "risk" in low:
+            content = risks_html(md)
         elif low == "the test":
-            content = test_html(md)
+            content = timeline_svg(md) + test_html(md)
             gate = gate_section(run) if full else None
             if gate:
                 content += ("<h3>Gate tracker</h3><p class=\"muted\">From "
@@ -630,7 +986,7 @@ def render(run_dir) -> Path:
 <p class="foot">Verdict, score and confidence are copied from <code>30_assessment/scorecard_result.json</code>; every other figure is shown as its run file gives it.</p>
 {full_plan}
 </main></div>
-<script>{JS}</script>
+<script>{MODEL_JS}{JS}</script>
 </body></html>
 """
     out = dec / "report.html"
