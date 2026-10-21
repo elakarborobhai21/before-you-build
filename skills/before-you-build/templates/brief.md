@@ -26,6 +26,7 @@ The launch country is the primary market. Other countries in the region are for 
 - Who: <the customer, as specifically as the founder can say>
 - Where: <city, area or channel where they are found>
 - How they solve the problem today: <the current alternative, including doing nothing>
+- Conversion rate: <the share of interested people the founder expects to pay, and where the figure comes from; or `unknown`, and the Customer & Demand Analyst looks for benchmarks>
 
 ## Founders
 

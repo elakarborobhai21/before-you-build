@@ -75,13 +75,14 @@ Every test also includes a channel measure: the real cost to win a paying custom
 
 Results are saved on your computer in `~/before-you-build-runs/<idea-slug>-<YYYY-MM-DD>/`.
 
-Start with `50_decision/report.html`. Open it in any browser: it shows the verdict, the readiness score and the seven ratings as charts, the numbers with a switch between the three scenarios, the risks, and the test with its pass, fail and channel lines. Every figure keeps its label, and each sourced label links to its source. The page is one file with no outside scripts or fonts, so it works offline and sends nothing anywhere. A script builds it from the run files, so it shows only what they say.
+Start with `50_decision/report.html`. Open it in any browser: it shows the verdict, the readiness score and the seven ratings as charts, the numbers with a switch between the three scenarios, the risks, and the test with its pass, fail and channel lines. In a Quick Check the numbers are charts for all three versions (Defensive, Moderate and Optimistic): cash over 24 months, profit or loss each month, and what one sale earns. Each version has a box for the conversion rate; type your own figure and every chart and number in that version is worked out again in the page. Every figure keeps its label, and each sourced label links to its source. The page is one file with no outside scripts or fonts, so it works offline and sends nothing anywhere. A script builds it from the run files, so it shows only what they say.
 
 **Quick Check:**
 
 - `00_brief.md`: your idea and details, as the agents understood them
 - `10_research/`: research notes on market and competition, customer demand, and founder fit
 - `20_model/quick_model.md`: a simple model with three scenarios (Defensive, Moderate, Optimistic)
+- `20_model/model_inputs.json`: the same model as data, which the report uses to recalculate when you change the conversion rate
 - `30_assessment/`: the Sceptical Investor's critique and the scorecard result
 - `50_decision/report.html`: the report to open in a browser
 - `50_decision/decision_pack.md`: the short decision pack

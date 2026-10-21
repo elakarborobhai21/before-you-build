@@ -12,6 +12,7 @@ from check_run import check, expected_files  # noqa: E402
 
 CLI = REPO / "scripts" / "check_run.py"
 RESULT = {"readiness_score": 60, "verdict": "Pivot", "confidence": "Medium", "reasons": []}
+MODEL = REPO / "examples" / "lagos-delivery-quick-check" / "20_model" / "model_inputs.json"
 
 
 def build(run_dir: Path, files, disclaimer=True):
@@ -21,6 +22,8 @@ def build(run_dir: Path, files, disclaimer=True):
         path.parent.mkdir(parents=True, exist_ok=True)
         if rel.endswith("scorecard_result.json"):
             path.write_text(json.dumps(RESULT), encoding="utf-8")
+        elif rel.endswith("model_inputs.json"):
+            path.write_text(MODEL.read_text(encoding="utf-8"), encoding="utf-8")
         elif rel.endswith(".md") or rel.endswith(".html"):
             path.write_text("# x\n\n> " + DISCLAIMER + "\n" if disclaimer else "# x\n",
                             encoding="utf-8")
@@ -39,7 +42,7 @@ class ExpectedFilesTest(unittest.TestCase):
         ])
         self.assertEqual(expected_files("quick", "A", 0), ["00_brief.md"])
         q3 = expected_files("quick", "B", 3)
-        for rel in ["20_model/quick_model.md", "30_assessment/sceptic.md",
+        for rel in ["20_model/quick_model.md", "20_model/model_inputs.json", "30_assessment/sceptic.md",
                     "30_assessment/scorecard_inputs.json", "30_assessment/scorecard_result.json"]:
             self.assertIn(rel, q3)
         self.assertNotIn("30_assessment/banker.md", q3)
@@ -146,6 +149,16 @@ class CheckTest(unittest.TestCase):
                 problems = check(run, "quick", "A", 3)
                 self.assertEqual(len(problems), 1, bad)
                 self.assertIn("scorecard_result.json", problems[0])
+
+    def test_model_inputs_must_be_valid(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp)
+            build(run, expected_files("quick", "A", 2))
+            self.assertEqual(check(run, "quick", "A", 2), [])
+            (run / "20_model/model_inputs.json").write_text('{"scenarios": {}}', encoding="utf-8")
+            problems = check(run, "quick", "A", 2)
+            self.assertEqual(len(problems), 1)
+            self.assertIn("not valid model inputs: 20_model/model_inputs.json", problems[0])
 
     def test_report_html_needs_the_disclaimer(self):
         with tempfile.TemporaryDirectory() as tmp:
